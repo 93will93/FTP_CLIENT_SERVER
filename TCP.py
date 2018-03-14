@@ -14,14 +14,17 @@ class TCP:
         self._clientSocket.connect(add)
 
     def transmit(self, s: object) -> object:
-        self._clientSocket.sendall(s.encode(ENCODING_SCHEME))
+        self._clientSocket.send(s.encode(ENCODING_SCHEME))
 
     def __exit__(self):
         self._clientSocket.close()
 
-    def receive(self):
-        serverResponse = self._clientSocket.recv(BUFFER_SIZE).decode(ENCODING_SCHEME)
+    def receive(self, size=BUFFER_SIZE):
+        serverResponse = self._clientSocket.recv(size).decode(ENCODING_SCHEME)
         return serverResponse
+
+    def close(self):
+        self._clientSocket.close()
 
 
 if __name__ == '__main__':
