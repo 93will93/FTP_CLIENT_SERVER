@@ -56,6 +56,22 @@ class FTPclient:
         print(self._tcp_cmd.receive())
         print(self._tcp_data.receive())
 
+    def retr(self, path):
+        self._tcp_cmd.transmit('RETR' + ' ' + path + CRLF)
+        print(self._tcp_cmd.receive())
+        x = self._tcp_data.receive()
+        f = open('Photo.scr', "w+")
+        f.write(x)
+        f.close()
+
+    def pwm(self):
+        self._tcp_cmd.transmit(CRLF)
+        print(self._tcp_data.receive())
+
+    def cwd(self, path):
+        self._tcp_cmd.transmit('CWD' + ' ' + path + CRLF)
+        print(self._tcp_cmd.receive())
+
     def pasvModeStringHandling(self, server_resp):
 
         if ENTERING_PASV_MODE_CODE != self.whatIsTheCode(server_resp):
@@ -85,4 +101,11 @@ if __name__ == '__main__':
     client = FTPclient('ftp.mirror.ac.za')
     client.pasv()
     client.list()
+
+    path = input('Please enter file path: ')
+    client.cwd(path)
+    client.list()
+
+    # client.retr(path)
+    # client.pwm()
     client.quit()
