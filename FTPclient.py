@@ -72,20 +72,22 @@ class FTPclient:
         print('Closing Data Port: ' + str(self._data_port))
 
     def retr(self, path):
-        # self.pasv()
-        self.createDataPortConnection()
-        self._tcp_cmd.transmit('TYPE I' + SP + CRLF)
+        self.pasv()
+        self._tcp_cmd.transmit('TYPE I' + CRLF)
         print('Response to TYPE I: ' + str(self._tcp_cmd.receive(8192)))
         self._tcp_cmd.transmit('RETR' + SP + path + CRLF)
         print('Response to RETR: ' + str(self._tcp_cmd.receive()))
 
         data = self._tcp_data.receive(8192)
-        while data:
+        while True:
             temp = self._tcp_data.receive()
+            if not temp:
+                break
             data += temp
 
-        f = open('Photo.scr', "wb")
-        f.write(data)
+        print(str(self._tcp_data.receive(8192)))
+        f = open(path, "wb")
+        f.write(data.encode())
         f.close()
         self.closeDataPort()
 
