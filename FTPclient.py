@@ -24,9 +24,9 @@ class FTPclient:
         self.login(self._user, password)
 
     def login(self, user, password):
-        self._tcp_cmd.transmit('USER' + user + CRLF)
+        self._tcp_cmd.transmit('USER ' + user + CRLF)
         server_resp = self._tcp_cmd.receive()
-        self._tcp_cmd.transmit('PASS' + password + CRLF)
+        self._tcp_cmd.transmit('PASS ' + password + CRLF)
         s = self._tcp_cmd.receive(8192)
         print(server_resp)
         if USER_LOGIN_SUCCESS_CODE == self.whatIsTheCode(server_resp):
@@ -78,7 +78,11 @@ class FTPclient:
             return "Server did Not Respond"
 
         start_of_ip = server_resp.find('(')
-        server_resp = server_resp[start_of_ip+1:-3]
+        end_of_ip = server_resp.find(')')
+
+        server_resp = server_resp[start_of_ip+1:end_of_ip]
+        # server_resp = server_resp[:end_of_ip]
+
         server_resp = server_resp.split(',')
 
         # Retrieving IP from the server response
@@ -98,14 +102,14 @@ class FTPclient:
 
 # Testing the class works with an open ftp server
 if __name__ == '__main__':
-    client = FTPclient('ftp.mirror.ac.za')
+    client = FTPclient('ftp.uconn.edu', 'anonymous', 'anonymous@')
     client.pasv()
     client.list()
 
     path = input('Please enter file path: ')
-    client.cwd(path)
+    # client.cwd(path)
     client.list()
 
     # client.retr(path)
-    # client.pwm()
+    client.pwm()
     client.quit()
