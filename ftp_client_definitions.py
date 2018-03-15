@@ -152,16 +152,25 @@ class FTP_Client:
     def cmdMKD(self):
         path = input("Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
         self.clientSocket.sendall(('MKD'+' ' + path + Line_terminator).encode(codeType))
-        response = self.clientSocket.recv(8192).decode()
+        response = self.clientSocket.recv(8192).decode(codeType)
         print(response)
 
     def cmdRMD(self):
         path = input("Please ensure you are in the directory where the old sub-directory will be deleted\n, Enter name of directory to be deleted:  ")
         self.clientSocket.sendall(('RMD' +' '+path + Line_terminator).encode(codeType))
-        response = self.clientSocket.recv(8192).decode()
+        response = self.clientSocket.recv(8192).decode(codeType)
         print(response)
 
-
+    def cmdDELE(self):
+        path = input("Please insert the file name that you want to delete: ")
+        print("Are you sure you want to delete", path, "?")
+        doubleCheck = input("Please enter  'Yes' or 'No'")
+        if doubleCheck == 'Yes':
+            self.clientSocket.sendall(('DELE' +' ' +path + Line_terminator).encode(codeType))
+            response = self.clientSocket.recv(8192).decode(codeType)
+            print(response)
+        elif doubleCheck == 'No':
+            print("Nothing has been deleted")
 
 
     def getResponseCode(self, message):
@@ -213,7 +222,7 @@ ftp = FTP_Client(serverName, serverPort, clientSocket)
 ftp.login()
 
 while 1:
-    message = input("Enter command")
+    message = input("Enter command or 'Q' to quit session: ")
 
     if message == "LIST":
         ftp.cmdLIST()
@@ -247,5 +256,8 @@ while 1:
 
     if message == 'RMD':
         ftp.cmdRMD()
+
+    if message == 'DELE':
+        ftp.cmdDELE()
 
 ftp.closeConnectcion()
