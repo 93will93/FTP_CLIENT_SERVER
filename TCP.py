@@ -1,6 +1,6 @@
 import socket
 
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 2048
 BUFFER = ''
 ENCODING_SCHEME = 'UTF-8'
 
@@ -17,10 +17,11 @@ class TCP:
         self._clientSocket.send(s.encode(ENCODING_SCHEME))
 
     def __exit__(self):
+        self.transmit('QUIT' + '\r\n')
         self._clientSocket.close()
 
-    def receive(self, size=BUFFER_SIZE):
-        serverResponse = self._clientSocket.recv(size).decode(ENCODING_SCHEME)
+    def receive(self, size=BUFFER_SIZE, codec=ENCODING_SCHEME):
+        serverResponse = self._clientSocket.recv(size).decode(codec)
         return serverResponse
 
     def close(self):
