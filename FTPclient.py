@@ -80,10 +80,10 @@ class FTPclient:
 
         data = self._tcp_data.receive(8192)
         while True:
-            temp = self._tcp_data.receive()
-            if not temp:
+            buffer = self._tcp_data.receive()
+            if not buffer:
                 break
-            data += temp
+            data += buffer
 
         print(str(self._tcp_data.receive(8192)))
         f = open(path, "wb")
@@ -112,6 +112,34 @@ class FTPclient:
         server_response = self._tcp_cmd.receive()
         print(server_response)
 
+    def stor(self, path):
+        name = input("Enter File name to upload: ")
+        fp = open(name, 'rb')
+        self.pasv()
+        self._tcp_cmd.transmit('TYPE I' + CRLF)
+        response = self._tcp_cmd.receive(8192)
+        print(response, '@@@@@')
+
+        self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
+        response = self._tcp_cmd.receive(8192)
+        print(response + '!!!!!')
+
+        data = fp.readline(8192)
+
+        while True:
+            self._tcp_data.transmitAll(data)
+            buffer = fp.readline(8192)
+            if not buffer:
+                break
+            data = buffer
+
+        print("Awaiting Response")
+
+        self._tcp_data.close()
+        response = self._tcp_cmd.receive(8192)
+        print(response)
+        fp.close()
+
     def pasvModeStringHandling(self, server_resp):
 
         if ENTERING_PASV_MODE_CODE != self.whatIsTheCode(server_resp):
@@ -138,6 +166,47 @@ class FTPclient:
         self._data_port = int((int(server_resp_port[0]) * 256) + int(server_resp_port[1]))
         print('Data Connection with IP: ' + server_ip + ':' + str(self._data_port))
         return server_ip, self._data_port
+
+    def mkd(self):
+        path = input("Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
+        self._tcp_cmd.transmit('MKD' + SP + path + CRLF)
+        response = self._tcp_cmd.receive(8192)
+        print(response)
+
+    def rmd(self):
+        path = input("Please ensure you are in the directory where the old sub-directory will be deleted\n, Enter name of directory to be deleted:  ")
+        self._tcp_cmd.transmit('RMD' + SP + path + CRLF)
+        response = self._tcp_cmd.receive(8192)
+        print(response)
+
+    def dele(self):
+        path = input("Please insert the file name that you want to delete: ")
+        print("Are you sure you want to delete", path, "?")
+        doubleCheck = input("Please enter  'Yes' or 'No'")
+        doubleCheck = doubleCheck.upper()
+
+        if doubleCheck == 'YES' or doubleCheck == 'Y':
+            self._tcp_cmd.transmit('DELE' + SP +path + CRLF)
+            response = self._tcp_cmd.receive(8192)
+            print(response)
+        elif doubleCheck == 'No':
+            print("Nothing has been deleted")
+
+    def noop(self):
+        self._tcp_cmd.transmit('NOOP' + CRLF)
+        print(self._tcp_cmd.receive())
+
+    def help(self, about=''):
+        self._tcp_cmd.transmit('HELP' + SP + about + CRLF)
+
+        data = self._tcp_cmd.receive(8192)
+        while True:
+            buffer = self._tcp_cmd.receive(8192)
+            if not buffer:
+                break
+            data = buffer
+        print(self._tcp_cmd.receive(8192))
+        print(data)
 
 
 # Testing the class works with an open ftp server
@@ -187,8 +256,28 @@ if __name__ == '__main__':
         if message == "CDUP":
             client.cdup()
 
+        if message == 'STOR':
+            path = input("Enter path extension: ")
+            client.stor(path)
+
+        if message == 'MKD':
+            client.mkd()
+
+        if message == 'RMD':
+            client.rmd()
+
         if message == "Q" or message == 'QUIT':
             client.quit()
             break
+
+        if message == 'DELE':
+            client.dele()
+
+        if message == 'NOOP':
+            client.noop()
+
+        if message == 'HELP':
+            x = input('What do you need help on: ')
+            client.help(x)
 
 print('Main loop Exit')

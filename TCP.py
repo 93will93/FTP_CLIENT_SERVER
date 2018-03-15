@@ -16,6 +16,9 @@ class TCP:
     def transmit(self, s: object) -> object:
         self._clientSocket.send(s.encode(ENCODING_SCHEME))
 
+    def transmitAll(self, s):
+        self._clientSocket.sendall(s)
+
     def __exit__(self):
         self.transmit('QUIT' + '\r\n')
         self._clientSocket.close()
