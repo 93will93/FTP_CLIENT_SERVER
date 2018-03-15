@@ -3,6 +3,7 @@ import time
 
 serverName = 'localhost'
 # serverName = 'ftp.uconn.edu'
+# serverName = "ftp.mirror.ac.za"
 
 serverPort = 21
 clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -66,14 +67,15 @@ class FTP_Client:
 
 
     def cmdLIST(self):
+        self.cmdPASV()
         self.createNewTCPConnection(self._data_port)
         self.clientSocket.sendall(('List '+Line_terminator).encode(codeType))
         response = self.clientSocket.recv(8192).decode(codeType)
-        secondResponse = self.clientSocket.recv(8192).decode(codeType)
+        print(response)
         list = self._tcp_data.recv(8192).decode(codeType)
-        print(response,'@@@')
-        print(secondResponse,'###')
         print(list)
+        secondResponse = self.clientSocket.recv(8192).decode(codeType)
+        print(secondResponse, '###')
         self._tcp_data.close()
         print("Data Socket closed")
 
@@ -116,8 +118,7 @@ class FTP_Client:
             if not temp:
                 break
             file = file + temp
-        print(self._tcp_data.recv(8192))
-        f = open('hello.bin', "wb")
+        f = open(path+'.bin', "wb")
         f.write(file)
         f.close()
         response3 = self.clientSocket.recv(8192).decode(codeType)
@@ -184,15 +185,40 @@ class FTP_Client:
 
 ftp = FTP_Client(serverName, serverPort, clientSocket)
 ftp.login()
-ftp.cmdPASV()
-ftp.cmdLIST()
-ftp.cmdPWD()
-path = input("enter path")
-ftp.cmdCWD(path)
-ftp.cmdPASV()
-ftp.cmdLIST()
-path2 = input("Enter file to be downloaded")
-ftp.cmdRETR(path2)
+# ftp.cmdLIST()
+# ftp.cmdPWD()
+# path = input("enter path")
+# ftp.cmdCWD(path)
+# ftp.cmdPASV()
+# ftp.cmdLIST()
+# path2 = input("Enter file to be downloaded")
+# ftp.cmdRETR(path2)
 
+
+while 1:
+    message = input("Enter command")
+
+    if message == "LIST":
+        ftp.cmdLIST()
+
+    if message == "PASV":
+        ftp.cmdPASV()
+
+    if message == "PWD":
+        ftp.cmdPWD()
+
+    if message == "CWD":
+        path = input("Enter path extentension")
+        ftp.cmdCWD(path)
+
+    if message == "RETR":
+        path = input("Enter file to download")
+        ftp.cmdRETR(path)
+
+    if message == "CDUP":
+        ftp.cmdCDUP()
+
+    if message == "Q":
+        break
 
 ftp.closeConnectcion()
