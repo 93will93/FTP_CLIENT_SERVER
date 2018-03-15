@@ -1,8 +1,8 @@
 from socket import *
 import time
 
-# serverName = 'localhost'
-serverName = 'ftp.uconn.edu'
+serverName = 'localhost'
+# serverName = 'ftp.uconn.edu'
 
 serverPort = 21
 clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -16,10 +16,12 @@ class FTP_Client:
         self.serverName = servername
         self.serverPort = serverPort
         self.clientSocket = clientSocket
-        self.username = "anonymous"
-        self.password = "anonymous@"
+        # self.username = "anonymous"
+        # self.password = "anonymous@"
         # self.username = "group14"
         # self.password = "engaqu4a"
+        self.username = "test"
+        self.password = "12345"
 
 
         self.account = ""
@@ -52,10 +54,16 @@ class FTP_Client:
     def closeConnectcion(self):
         self.clientSocket.close()
 
-    def cmdCWD(self):
-        self.clientSocket.sendall(('CWD'+ Line_terminator).encode(codeType))
+    def cmdCWD(self,path):
+        self.clientSocket.sendall(('CWD'+' '+path+ Line_terminator).encode(codeType))
         cwd = self.clientSocket.recv(2048).decode(codeType)
         print(cwd)
+
+    def cmdPWD(self):
+        self.clientSocket.sendall(('PWD'+Line_terminator).encode(codeType))
+        workingDirctory = self.clientSocket.recv(8192).decode(codeType)
+        print(workingDirctory)
+
 
     def cmdLIST(self):
         self.createNewTCPConnection(self._data_port)
@@ -93,6 +101,28 @@ class FTP_Client:
         print(self._tcp_IP," ",self._data_port)
 
 
+    def cmdRETR(self, path):
+        self.cmdPASV()
+        self.createNewTCPConnection(self._data_port)
+        self.clientSocket.sendall(('TYPE I'+Line_terminator).encode(codeType))
+        response = self.clientSocket.recv(8192).decode(codeType)
+        print(response)
+        self.clientSocket.sendall(('RETR' + ' '+ path+Line_terminator).encode(codeType))
+        response2 = self.clientSocket.recv(8192).decode(codeType)
+        print(response2)
+        file = self._tcp_data.recv(8192)
+        while 1:
+            temp = self._tcp_data.recv(8192)
+            if not temp:
+                break
+            file = file + temp
+        print(self._tcp_data.recv(8192))
+        f = open('hello.bin', "wb")
+        f.write(file)
+        f.close()
+        response3 = self.clientSocket.recv(8192).decode(codeType)
+        print(response3)
+        self._tcp_data.close()
 
 
     def getResponseCode(self, message):
@@ -115,24 +145,16 @@ class FTP_Client:
             return "Server did Not Respond"
         print(server_resp)
 
-        server_resp.strip(').')
-        print(server_resp)
-        # if server_resp.endswith('.'):
-        #     print('True')
 
         print(type(server_resp))
 
-
         start_of_ip = server_resp.find('(')
         end_of_ip = server_resp.find(')')
-        temResponse = server_resp
-        server_resp = server_resp[start_of_ip+1:-3]
+        server_resp = server_resp[start_of_ip + 1:end_of_ip]
         server_resp = server_resp.split(',')
-
-        if server_resp.endswith("."):
-            print('True')
         # Retrieving IP from the server response
         # deliminating the IP by dot so as to get 192.134...
+
         temp = ''
         for i in range(0, 4):
             temp = temp + (server_resp[i]) + '.'
@@ -163,11 +185,14 @@ class FTP_Client:
 ftp = FTP_Client(serverName, serverPort, clientSocket)
 ftp.login()
 ftp.cmdPASV()
-# ftp.cmdLIST()
-# time.sleep(1)
-# ftp.cmdCDUP()
-# ftp.cmdPASV()
-# ftp.cmdLIST()
+ftp.cmdLIST()
+ftp.cmdPWD()
+path = input("enter path")
+ftp.cmdCWD(path)
+ftp.cmdPASV()
+ftp.cmdLIST()
+path2 = input("Enter file to be downloaded")
+ftp.cmdRETR(path2)
 
 
 ftp.closeConnectcion()
