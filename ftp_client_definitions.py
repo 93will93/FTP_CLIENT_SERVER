@@ -125,6 +125,34 @@ class FTP_Client:
         print(response3)
         self._tcp_data.close()
 
+    def cmdSTOR(self, path):
+        name = input("Enter File name to upload")
+        fp = open(name, 'rb')
+        self.cmdPASV()
+        self.createNewTCPConnection(self._data_port)
+        self.clientSocket.sendall(('TYPE I' + Line_terminator).encode(codeType))
+        response = self.clientSocket.recv(8192).decode(codeType)
+        print(response,'@@@@@')
+
+        self.clientSocket.sendall(('STOR' + ' ' + path + Line_terminator).encode(codeType))
+        response2 = self.clientSocket.recv(8192).decode(codeType)
+        print(response2,'!!!!!')
+
+        data = fp.readline(8192)
+
+        while 1:
+            self._tcp_data.sendall(data)
+            buf = fp.readline(8192)
+            if not buf:
+                break
+            data = buf
+        print("Awaiting Response")
+
+        self._tcp_data.close()
+        response3 = self.clientSocket.recv(8192).decode(codeType)
+        print(response3)
+        fp.close()
+
 
     def getResponseCode(self, message):
         code = message[:3]
@@ -174,25 +202,8 @@ class FTP_Client:
 
 
 
-
-    # def activeLIST(self):
-
-
-
-
-
-#  def login(self, username, password, account):
-
 ftp = FTP_Client(serverName, serverPort, clientSocket)
 ftp.login()
-# ftp.cmdLIST()
-# ftp.cmdPWD()
-# path = input("enter path")
-# ftp.cmdCWD(path)
-# ftp.cmdPASV()
-# ftp.cmdLIST()
-# path2 = input("Enter file to be downloaded")
-# ftp.cmdRETR(path2)
 
 
 while 1:
@@ -220,5 +231,9 @@ while 1:
 
     if message == "Q":
         break
+
+    if message == "STOR":
+        path = input("Enter path to upload")
+        ftp.cmdSTOR(path)
 
 ftp.closeConnectcion()
