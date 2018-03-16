@@ -115,7 +115,7 @@ class FTP_Client:
             if not temp:
                 break
             file = file + temp
-        f = open(path + '.bin', "wb")
+        f = open(path , "wb")
         f.write(file)
         f.close()
         response3 = self.clientSocket.recv(8192).decode(codeType)
