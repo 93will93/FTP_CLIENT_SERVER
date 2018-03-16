@@ -1,10 +1,10 @@
 from socket import *
 import time
 
-# serverName = 'localhost'
+serverName = '127.0.0.1'
 # serverName = 'ftp.uconn.edu'
 # serverName = "ftp.mirror.ac.za"
-serverName = 'elen4017.ug.eie.wits.ac.za'
+# serverName = 'elen4017.ug.eie.wits.ac.za'
 
 serverPort = 21
 clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -12,6 +12,9 @@ codeType = "UTF-8"
 Line_terminator = '\r\n'
 ENTERING_PASV_MODE_CODE = 227
 
+clientSocket.connect((serverName, serverPort))
+print("Connected")
+clientSocket.sendall(("YES").encode(codeType))
 
 class FTP_Client:
     def __init__(self, servername, serverPort, clientSocket=None):
@@ -20,10 +23,8 @@ class FTP_Client:
         self.clientSocket = clientSocket
         # self.username = "anonymous"
         # self.password = "anonymous@"
-        self.username = "group14"
-        self.password = "engaqu4a"
-        # self.username = "test"
-        # self.password = "12345"
+        self.username = "test"
+        self.password = "12345"
 
         self.account = ""
         self._data_port = None
@@ -220,46 +221,46 @@ class FTP_Client:
         return server_ip, self._data_port
 
 
-ftp = FTP_Client(serverName, serverPort, clientSocket)
-ftp.login()
-
-while 1:
-    message = input("Enter command or 'Q' to quit session: ")
-
-    if message == "LIST":
-        ftp.cmdLIST()
-
-    if message == "PASV":
-        ftp.cmdPASV()
-
-    if message == "PWD":
-        ftp.cmdPWD()
-
-    if message == "CWD":
-        path = input("Enter path extentension")
-        ftp.cmdCWD(path)
-
-    if message == "RETR":
-        path = input("Enter file to download")
-        ftp.cmdRETR(path)
-
-    if message == "CDUP":
-        ftp.cmdCDUP()
-
-    if message == "Q":
-        break
-
-    if message == "STOR":
-        path = input("Enter path to upload")
-        ftp.cmdSTOR(path)
-
-    if message == 'MKD':
-        ftp.cmdMKD()
-
-    if message == 'RMD':
-        ftp.cmdRMD()
-
-    if message == 'DELE':
-        ftp.cmdDELE()
-
-ftp.closeConnectcion()
+# ftp = FTP_Client(serverName, serverPort, clientSocket)
+# ftp.login()
+#
+# while 1:
+#     message = input("Enter command or 'Q' to quit session: ")
+#
+#     if message == "LIST":
+#         ftp.cmdLIST()
+#
+#     if message == "PASV":
+#         ftp.cmdPASV()
+#
+#     if message == "PWD":
+#         ftp.cmdPWD()
+#
+#     if message == "CWD":
+#         path = input("Enter path extentension")
+#         ftp.cmdCWD(path)
+#
+#     if message == "RETR":
+#         path = input("Enter file to download")
+#         ftp.cmdRETR(path)
+#
+#     if message == "CDUP":
+#         ftp.cmdCDUP()
+#
+#     if message == "Q":
+#         break
+#
+#     if message == "STOR":
+#         path = input("Enter path to upload")
+#         ftp.cmdSTOR(path)
+#
+#     if message == 'MKD':
+#         ftp.cmdMKD()
+#
+#     if message == 'RMD':
+#         ftp.cmdRMD()
+#
+#     if message == 'DELE':
+#         ftp.cmdDELE()
+#
+# ftp.closeConnectcion()
