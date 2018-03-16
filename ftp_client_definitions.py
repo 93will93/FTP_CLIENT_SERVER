@@ -6,7 +6,7 @@ serverName = '127.0.0.1'
 # serverName = "ftp.mirror.ac.za"
 # serverName = 'elen4017.ug.eie.wits.ac.za'
 
-serverPort = 21
+serverPort = 12000
 clientSocket = socket(AF_INET, SOCK_STREAM)
 codeType = "UTF-8"
 Line_terminator = '\r\n'
@@ -15,6 +15,7 @@ ENTERING_PASV_MODE_CODE = 227
 clientSocket.connect((serverName, serverPort))
 print("Connected")
 clientSocket.sendall(("YES").encode(codeType))
+print(clientSocket.recv(8192).decode(codeType))
 
 class FTP_Client:
     def __init__(self, servername, serverPort, clientSocket=None):
