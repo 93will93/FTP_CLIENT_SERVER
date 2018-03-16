@@ -1,9 +1,10 @@
 from socket import *
 import time
 
-serverName = 'localhost'
+# serverName = 'localhost'
 # serverName = 'ftp.uconn.edu'
 # serverName = "ftp.mirror.ac.za"
+serverName = 'elen4017.ug.eie.wits.ac.za'
 
 serverPort = 21
 clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -19,10 +20,10 @@ class FTP_Client:
         self.clientSocket = clientSocket
         # self.username = "anonymous"
         # self.password = "anonymous@"
-        # self.username = "group14"
-        # self.password = "engaqu4a"
-        self.username = "test"
-        self.password = "12345"
+        self.username = "group14"
+        self.password = "engaqu4a"
+        # self.username = "test"
+        # self.password = "12345"
 
         self.account = ""
         self._data_port = None
@@ -215,6 +216,7 @@ class FTP_Client:
         # Formula to calculate port number
         self._data_port = int((int(server_resp_port[0]) * 256) + int(server_resp_port[1]))
         print('Data Connection with IP: ' + server_ip + ':' + str(self._data_port))
+        print("Data point", self._data_port)
         return server_ip, self._data_port
 
 
