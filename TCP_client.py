@@ -31,7 +31,7 @@ class TCP:
         self._clientSocket, self._clientAddress =  self._serverSocket.accept()
 
     def close(self):
-        self._serverSocket.close()
+        self._clientSocket.close()
 
     def getSocket(self):
         return self._clientSocket

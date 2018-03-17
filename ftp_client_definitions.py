@@ -2,12 +2,12 @@ from socket import *
 import time
 
 # serverName = 'localhost'
-# serverName = '127.0.0.1'
+serverName = '127.0.0.1'
 # serverName = 'ftp.uconn.edu'
-serverName = "ftp.mirror.ac.za"
+# serverName = "ftp.mirror.ac.za"
 # serverName = 'elen4017.ug.eie.wits.ac.za'
 
-serverPort = 21
+serverPort = 12000
 clientSocket = socket(AF_INET, SOCK_STREAM)
 codeType = "UTF-8"
 Line_terminator = '\r\n'
@@ -24,10 +24,10 @@ class FTP_Client:
         self.serverPort = serverPort
         self.clientSocket = clientSocket
         # self.Connect_Control_Socket(self.clientSocket)
-        self.username = "anonymous"
-        self.password = "anonymous@"
-        # self.username = "test"
-        # self.password = "12345"
+        # self.username = "anonymous"
+        # self.password = "anonymous@"
+        self.username = "test"
+        self.password = "12345"
 
         self.account = ""
         self._data_port = None
@@ -123,7 +123,7 @@ class FTP_Client:
 
     def cmdRETR(self, path):
         self.cmdPASV()
-        # self.createNewTCPConnection(self._data_port)
+        self.createNewTCPConnection(self._data_port)
         self.clientSocket.sendall(('TYPE I' + Line_terminator).encode(codeType))
         response = self.clientSocket.recv(8192).decode(codeType)
         print(response)
@@ -240,6 +240,11 @@ class FTP_Client:
         print("Data point", self._data_port)
         return server_ip, self._data_port
 
+    def QUIT(self):
+        self.clientSocket.sendall(('QUIT'+Line_terminator).encode(codeType))
+        logoutMessage = self.clientSocket.recv(8192).decode(codeType)
+        print(logoutMessage)
+
 
 ftp = FTP_Client(serverName, serverPort, clientSocket)
 ftp.login()
@@ -267,7 +272,8 @@ while 1:
     if message == "CDUP":
         ftp.cmdCDUP()
 
-    if message == "Q":
+    if message == "QUIT":
+        ftp.QUIT()
         break
 
     if message == "STOR":

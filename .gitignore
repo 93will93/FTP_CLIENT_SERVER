@@ -4,3 +4,11 @@
 *.bin
 
 __pycache__/
+
+*.jpeg
+
+combined\.pdf
+
+*.txt
+
+rfc\.pdf

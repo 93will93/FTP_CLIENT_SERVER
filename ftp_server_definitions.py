@@ -5,19 +5,18 @@ import TCP_server
 import TCP_client
 import random
 
-
 BUFFERSIZE = 8192
 codeType = 'UTF-8'
 Line_terminator = '\r\n'
 
 serverPort = 12000
 serverHost = '127.0.0.1'
-commandList = ['USER', 'PASS', 'PWD', 'PASV', 'LIST','SYST']
+commandList = ['USER', 'PASS', 'PWD', 'PASV', 'LIST', 'SYST', 'TYPE', 'RETR', 'STOR', 'QUIT']
 # serverSocket = socket(AF_INET, SOCK_STREAM)
 # serverSocket.bind(('', serverPort))
 
 ftp_server_connection = TCP_server.TCP(serverHost, serverPort)
-ftp_server_connection.bindSocket('',serverPort)
+ftp_server_connection.bindSocket('', serverPort)
 
 print("Server is ready to recieve")
 
@@ -30,6 +29,8 @@ class FTP_Server(threading.Thread):
         self.CWD = os.getenv('HOME')
         self._PWD = os.getcwd()
         self.incommingCommand = ' '
+        # Mode must be ASCII by default
+        self.mode = 'A'
 
         self.ftp_client_control_connection = TCP_client.TCP(serverSocket, clientSocket, clientAdress)
         # self.ftp_client_control_connection.acceptConnection()
@@ -48,11 +49,8 @@ class FTP_Server(threading.Thread):
 
     def run(self):
         self.welcomeMessage()
-        # print("Testing")
-        # print("Testing2")
         while True:
             try:
-                # print("trying")
                 incommingCommand = self.ftp_client_control_connection.receive()
 
 
@@ -63,6 +61,9 @@ class FTP_Server(threading.Thread):
                 cmd, arg = incommingCommand[:4].strip().upper(), incommingCommand[4:].strip() or None
                 if cmd in commandList:
                     commandFunction = getattr(self, cmd)
+                    if cmd == 'QUIT':
+                        commandFunction()
+                        break
                     if arg == None:
                         commandFunction()
                     elif arg != None:
@@ -73,14 +74,14 @@ class FTP_Server(threading.Thread):
                 print(err)
 
     def welcomeMessage(self):
-        self.clientSocket.send(("220 Welcome to the Server "+Line_terminator).encode(codeType))
+        self.clientSocket.send(("220 Welcome to the Server " + Line_terminator).encode(codeType))
         # self.ftp_client_control_connection.transmit("220 Welcome message")
-
 
     def USER(self, username):
         if username == "test":
             # self.ftp_client_control_connection.transmitAll("331 User name okay, need password")
-            self.clientSocket.send(("331 User name okay, need password " + Line_terminator).encode(codeType))
+            # self.clientSocket.send(("331 User name okay, need password " + Line_terminator).encode(codeType))
+            self.transmitControlCommand("331 User name okay, need password ")
         if username == '':
             # self.ftp_client_control_connection.transmitAll("501 Syntax error in parameters")
             self.clientSocket.send(("501 Syntax error in parameters " + Line_terminator).encode(codeType))
@@ -100,28 +101,84 @@ class FTP_Server(threading.Thread):
 
     def PWD(self):
         self._PWD = os.getcwd()
-        self.clientSocket.send(('257' + ' "' + self._PWD + '" ' + 'is the working directory' + Line_terminator).encode(codeType))
+        self.clientSocket.send(
+            ('257' + ' "' + self._PWD + '" ' + 'is the working directory' + Line_terminator).encode(codeType))
         # self.ftp_client_control_connection.transmitAll('257' + ' "' + self._PWD + '" ' + 'is the working directory')
+
+    def openDataChannel(self):
+        self.serverSock.acceptConnection()
+        self.dataSock = self.serverSock.getClientSocket()
+        self.address = self.serverSock.getClientAdress()
+
+    def closeDataChannel(self):
+        self.dataSock.close()
+        if self.isPASV == True:
+            self.serverSock.close()
 
     def LIST(self):
 
         self.clientSocket.send(("150 List is here" + Line_terminator).encode(codeType))
-        # self.ftp_client_control_connection.transmitAll("150 List is here")
-        # self.dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.dataSock, self.address = self.serverSock.accept()
-        self.serverSock.acceptConnection()
-        self.dataSock = self.serverSock.getClientSocket()
-        self.address = self.serverSock.getClientAdress()
-        directoryList = os.listdir(self._PWD)
-        print(directoryList)
+        self.openDataChannel()
 
+        directoryList = os.listdir(self._PWD)
         for i in directoryList:
             self.dataSock.sendall((str(i) + Line_terminator).encode(codeType))
 
-        # self.dataSock.sendall(("Hello"+Line_terminator).encode(codeType))
-        # self.ftp_client_control_connection.transmitAll('226 List is done transferring')
         self.clientSocket.send(('226 List is done transferring' + Line_terminator).encode(codeType))
-        self.dataSock.close()
+        self.closeDataChannel()
+
+    def RETR(self, filename):
+        downloadPath = os.path.join(self._PWD, filename)
+        if not os.path.exists(downloadPath):
+            self.transmitControlCommand('550 file does not exist')
+
+        try:
+            if self.mode == 'I':
+                file = open(downloadPath, 'rb')
+            else:
+                file = open(downloadPath, 'r')
+        except OSError as error:
+            print(error)
+
+        self.transmitControlCommand('150 Opening data channel socket')
+        self.openDataChannel()
+        data = file.readline(BUFFERSIZE)
+
+        while 1:
+            if self.mode == 'I':
+                self.dataSock.sendall((data))  # + Line_terminator).encode(codeType))
+            else:
+                self.dataSock.sendall((data+Line_terminator).encode(codeType))
+            buf = file.readline(8192)
+            if not buf:
+                break
+            data = buf
+        file.close()
+        self.closeDataChannel()
+        self.transmitControlCommand('226 Transfer complete')
+
+    def STOR(self, filename):
+        uploadpath = os.path.join(self._PWD, filename)
+        try:
+            if self.mode == 'I':
+                file = open(uploadpath, 'wb')
+            else:
+                file = open(uploadpath, 'w')
+        except OSError as error:
+            print(error)
+
+        self.transmitControlCommand('150 Opening data channel socket')
+        self.openDataChannel()
+        data = self.dataSock.recv(BUFFERSIZE)
+        while 1:
+            temp = self.dataSock.recv(BUFFERSIZE)
+            if not temp:
+                break
+            data = data + temp
+        file.write(data)
+        file.close()
+        self.closeDataChannel()
+        self.transmitControlCommand('226 Transfer complete')
 
     def PASV(self):
         self.isPASV = True
@@ -135,28 +192,45 @@ class FTP_Server(threading.Thread):
         self.newPort = self.newPortNumber1 * 256 + self.newPortNumber2
         print('new port', self.newPort)
 
-        self.serverSock = TCP_server.TCP(serverHost,self.newPort)
+        self.serverSock = TCP_server.TCP(serverHost, self.newPort)
         self.serverSock.bindSocket(serverHost, self.newPort)
         self.serverSock.listen(5)
 
-        # self.serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # self.serverSock.bind((serverHost, self.newPort))
-        # self.serverSock.listen(5)
-
         tempServerhost = serverHost.replace('.', ',')
-        self.ftp_client_control_connection.transmitAll('227 Entering passive mode' + '(' + tempServerhost + ','
-                                                       + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
+        # self.ftp_client_control_connection.transmitAll('227 Entering passive mode' + '(' + tempServerhost + ','
+        #                                             + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
+
+        self.transmitControlCommand('227 Entering passive mode' + '(' + tempServerhost + ','
+                                    + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
+        print('After 2')
 
     def SYST(self):
         self.clientSocket.send(("215 Windows " + Line_terminator).encode(codeType))
 
+    def TYPE(self, type):
+        self.mode = type
+        if self.mode == 'A':
+            self.transmitControlCommand('200 ASCII mode set')
+        elif self.mode == 'I':
+            self.transmitControlCommand('200 Binary mode set')
+
+    def transmitControlCommand(self, message):
+        self.clientSocket.sendall((message + Line_terminator).encode(codeType))
+
+    def QUIT(self):
+        self.transmitControlCommand('221 User logged out')
+
+        print(self.clientAdress, 'has been disconnected')
+        # self.clientSocket.close()
+        self.ftp_client_control_connection.close()
+
+
 while 1:
     ftp_server_connection.listen(1)
     ftp_server_connection.acceptConnection()
-    newThread = FTP_Server(ftp_server_connection.getServerSocket(),ftp_server_connection.getClientSocket(), ftp_server_connection.getClientAdress())
+    newThread = FTP_Server(ftp_server_connection.getServerSocket(), ftp_server_connection.getClientSocket(),
+                           ftp_server_connection.getClientAdress())
     newThread.start()
-
 
     # ftp_client_control_connection = TCP_client.TCP(ftp_server_connection.getServerSocket())
     #
