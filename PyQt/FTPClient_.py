@@ -79,12 +79,16 @@ class FTPclient:
         return self._tcp_data
 
     def list(self):
+        self._server_response =''
         self.pasv()
         self._tcp_cmd.transmit('LIST' + SP + CRLF)
-        print(self._tcp_cmd.receive())
-        print(self._tcp_cmd.receive())
+        self._server_response = str(self._tcp_cmd.receive())
+        self._server_response += str(self._tcp_cmd.receive())
+        # print(self._tcp_cmd.receive())
+        # print(self._tcp_cmd.receive())
 
-        print(self._tcp_data.receive())
+        self._server_response += str(self._tcp_data.receive())
+        print(self._server_response)
         self._tcp_data.close()
         print('Closing Data Port: ' + str(self._data_port))
 

@@ -8,7 +8,8 @@ from MainWindow import Ui_MainWindow
 PASSWORD_MODE = 2
 NORMAL_MODE = 0
 
-POSSIBLE_CLIENT_OPERATIONS = ['List', 'Upload', 'Download', 'Move', 'Delete']
+POSSIBLE_CLIENT_OPERATIONS = ['', 'List', 'Upload', 'Download', 'Move', 'Delete']
+POSSIBLE_OPERATIONS_ACTION = {'': 0, 'List': 1, 'Upload': 2, 'Download': 3, 'Move': 4, 'Delete': 5}
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -18,7 +19,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show()
         self._server_message = ''
         self._ftp_client = FTPClient_.FTPclient()
-
+        self._userAction = ''
+        self._loggedIn = False
         # Setting up check list
         self.cb_show_password.setChecked(False)
 
@@ -44,19 +46,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_connect.pressed.connect(self.btn_connect_handler)
         self.btn_disconnect.pressed.connect(self.btn_disconnect_handler)
         self.cb_show_password.stateChanged.connect(self.cb_show_password_handler)
-
+        self.comboBox_userAction.currentIndexChanged[str].connect(self.comboBox_userAction_handler)
+        self.btn_proceed.pressed.connect(self.btn_proceed_handler)
 
     # CONNECTION BUTTONS HANDLERS
     def btn_connect_handler(self):
         ftp_server_address = self.le_ftp_server_address.text()
         username = self.le_username.text()
         password = self.le_password.text()
-        loggedIn = self._ftp_client.login(ftp_server_address, username, password)
+        self._loggedIn = self._ftp_client.login(ftp_server_address, username, password)
         self._server_message = self._ftp_client.getServerMessage()
         self.td_server_response.setText(self._server_message)
         print(self._server_message)
 
-        if loggedIn == True:
+        if self._loggedIn == True:
             # lock all the inputs for user name and servers.
             print('Logged IN')
 
@@ -69,6 +72,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.le_password.setEchoMode(NORMAL_MODE)
         else:
             self.le_password.setEchoMode(PASSWORD_MODE)
+
+    # COMBOBOX HANDLER ['':0, 'List':1, 'Upload':2, 'Download':3, 'Move':4, 'Delete':5]
+    def comboBox_userAction_handler(self, choice):
+        self._userAction = choice
+
+    # PROCEED BUTTON HANDLER
+    def btn_proceed_handler(self):
+        if self._loggedIn:
+            if self._userAction == 'List':
+                self._ftp_client.list()
+                self._server_message += self._ftp_client.getServerMessage()
+                self.td_server_response.setText(self._server_message)
+            else:
+                print(self._userAction)
+        else:
+            print("You are not logged in")
 
 
 if __name__ == '__main__':
