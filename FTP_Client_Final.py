@@ -25,6 +25,9 @@ class FTPclient:
         # TCP connections
         self._tcp_data = None
         self._tcp_cmd = None
+        self.isOwnPort = False
+        self.ownPort = None
+
 
     def getServerMessage(self):
         return self._server_response
@@ -164,31 +167,34 @@ class FTPclient:
         fp.close()
 
     def pasvModeStringHandling(self, server_resp):
+        if self.isOwnPort == True:
+            self._data_port = int(self.ownPort)
+            return '127.0.0.1',self._data_port
+        else:
+            if ENTERING_PASV_MODE_CODE != self.whatIsTheCode(server_resp):
+                return "Server did Not Respond"
 
-        if ENTERING_PASV_MODE_CODE != self.whatIsTheCode(server_resp):
-            return "Server did Not Respond"
+            start_of_ip = server_resp.find('(')
+            end_of_ip = server_resp.find(')')
 
-        start_of_ip = server_resp.find('(')
-        end_of_ip = server_resp.find(')')
+            server_resp = server_resp[start_of_ip+1:end_of_ip]
+            # server_resp = server_resp[:end_of_ip]
 
-        server_resp = server_resp[start_of_ip+1:end_of_ip]
-        # server_resp = server_resp[:end_of_ip]
+            server_resp = server_resp.split(',')
 
-        server_resp = server_resp.split(',')
+            # Retrieving IP from the server response
+            # deliminating the IP by dot so as to get 192.134...
+            temp = ''
+            for i in range(0, 4):
+                temp = temp + (server_resp[i]) + '.'
 
-        # Retrieving IP from the server response
-        # deliminating the IP by dot so as to get 192.134...
-        temp = ''
-        for i in range(0, 4):
-            temp = temp + (server_resp[i]) + '.'
-
-        server_ip = temp + server_resp[3]
-        # Retrieving Port Number client must listen to
-        server_resp_port = server_resp[-2:]
-        # Formula to calculate port number
-        self._data_port = int((int(server_resp_port[0]) * 256) + int(server_resp_port[1]))
-        print('Data Connection with IP: ' + server_ip + ':' + str(self._data_port))
-        return server_ip, self._data_port
+            server_ip = temp + server_resp[3]
+            # Retrieving Port Number client must listen to
+            server_resp_port = server_resp[-2:]
+            # Formula to calculate port number
+            self._data_port = int((int(server_resp_port[0]) * 256) + int(server_resp_port[1]))
+            print('Data Connection with IP: ' + server_ip + ':' + str(self._data_port))
+            return server_ip, self._data_port
 
     def mkd(self):
         path = input("Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
@@ -232,6 +238,14 @@ class FTPclient:
         print(dat)
         self._tcp_data.close()
         print(dat)
+
+    def port(self):
+        self.isOwnPort = True
+        port = input('Enter Port number wanting to be used for data connection: ')
+        self.ownPort = port
+        self._tcp_cmd.transmit('PORT' + SP + port + CRLF)
+        response = self._tcp_cmd.receive()
+        print(response)
 
 
 # Testing the class works with an open ftp server
@@ -311,4 +325,6 @@ if __name__ == '__main__':
             x = input('What do you need help on: ')
             client.help(x)
 
+        if message == 'PORT':
+            client.port()
 

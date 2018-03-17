@@ -11,7 +11,9 @@ Line_terminator = '\r\n'
 
 serverPort = 12000
 serverHost = '127.0.0.1'
-commandList = ['USER', 'PASS', 'PWD', 'PASV', 'LIST', 'SYST', 'TYPE', 'RETR', 'STOR', 'QUIT']
+commandList = ['USER', 'PASS', 'PWD', 'PASV', 'LIST', 'SYST', 'TYPE',
+               'RETR', 'STOR', 'QUIT','CWD' ,'CDUP', 'MKD', 'RMD','DELE'
+               ,'NOOP', 'PORT']
 # serverSocket = socket(AF_INET, SOCK_STREAM)
 # serverSocket.bind(('', serverPort))
 
@@ -26,7 +28,7 @@ class FTP_Server(threading.Thread):
         threading.Thread.__init__(self)
         self.loggedIn = False
         self.isPASV = False
-        self.CWD = os.getenv('HOME')
+        self._CWD = os.getenv('HOME')
         self._PWD = os.getcwd()
         self.incommingCommand = ' '
         # Mode must be ASCII by default
@@ -44,6 +46,8 @@ class FTP_Server(threading.Thread):
         self._pasvServerAdress = None
         self._pasvServerSocket = None
         self.newPort = 0
+        self.clientChosenPort = None
+        self.isChosenPort = False
         print('New Connection Added from: ', self.clientAdress)
         # self.welcomeMessage()
 
@@ -100,10 +104,54 @@ class FTP_Server(threading.Thread):
             self.loggedIn = False
 
     def PWD(self):
-        self._PWD = os.getcwd()
+        # self._PWD = os.getcwd()
         self.clientSocket.send(
             ('257' + ' "' + self._PWD + '" ' + 'is the working directory' + Line_terminator).encode(codeType))
         # self.ftp_client_control_connection.transmitAll('257' + ' "' + self._PWD + '" ' + 'is the working directory')
+        print(os.getenv('HOME'))
+
+    def CWD(self, path):
+        newPath = os.path.join(os.getcwd(),path)
+        if not os.path.exists(newPath):
+            self.transmitControlCommand('550 Directory does not exist')
+            return
+        self._CWD = newPath
+        self._PWD = newPath
+        os.chdir(self._PWD)
+        self.transmitControlCommand('250 Requested file action okay, completed')
+
+    def CDUP(self):
+        print(os.getcwd())
+        os.chdir('..')
+        self._PWD = os.getcwd()
+        self.transmitControlCommand('200 Changed directory to parent directory')
+        print(self._PWD)
+
+    def MKD(self, path):
+        newPath = os.path.join(os.getcwd(), path)
+        if not os.path.exists(newPath):
+            os.makedirs(newPath)
+            self.transmitControlCommand('257 '+ path+ ' has been created')
+        else:
+            self.transmitControlCommand('550 file could not be created')
+
+    def RMD(self, folderName):
+        folderToBeDeleted = os.path.join(os.getcwd(), folderName)
+        if not os.path.exists(folderToBeDeleted) or folderToBeDeleted == self._PWD:
+            self.transmitControlCommand('550 Folder does not exist')
+            return
+        else:
+            os.rmdir(folderToBeDeleted)
+            self.transmitControlCommand('257 ' + folderName +' folder has been deleted')
+
+    def DELE(self, fileName):
+        fileToBeDeleted = os.path.join(os.getcwd(),fileName)
+        if not os.path.exists(fileToBeDeleted):
+            self.transmitControlCommand('550 '+ fileName + ' does not exist')
+            return
+        else:
+            os.remove(fileToBeDeleted)
+            self.transmitControlCommand('250 ' + fileName + ' has been deleted' )
 
     def openDataChannel(self):
         self.serverSock.acceptConnection()
@@ -182,27 +230,39 @@ class FTP_Server(threading.Thread):
 
     def PASV(self):
         self.isPASV = True
-        tempPortNum1 = random.randint(8, 256)
-        tempPortNum2 = random.randint(1, 256)
-        if tempPortNum1 == self.newPortNumber1 and tempPortNum2 == self.newPortNumber2:
-            tempPortNum1 = random.randint(8, 255)
+        if self.isChosenPort == True:
+            self.serverSock = TCP_server.TCP(serverHost,  self.clientChosenPort)
+            self.serverSock.bindSocket(serverHost, self.clientChosenPort)
+            self.serverSock.listen(5)
+
+            tempServerhost = serverHost.replace('.', ',')
+            # self.ftp_client_control_connection.transmitAll('227 Entering passive mode' + '(' + tempServerhost + ','
+            #                                         + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
+
+            self.transmitControlCommand('227 Entering passive mode' + '(' + tempServerhost + ','
+                                        +  str(self.clientChosenPort)+ ')')
+        else:
+            tempPortNum1 = random.randint(8, 256)
             tempPortNum2 = random.randint(1, 256)
-        self.newPortNumber1 = tempPortNum1
-        self.newPortNumber2 = tempPortNum2
-        self.newPort = self.newPortNumber1 * 256 + self.newPortNumber2
-        print('new port', self.newPort)
+            if tempPortNum1 == self.newPortNumber1 and tempPortNum2 == self.newPortNumber2:
+                tempPortNum1 = random.randint(8, 255)
+                tempPortNum2 = random.randint(1, 256)
+            self.newPortNumber1 = tempPortNum1
+            self.newPortNumber2 = tempPortNum2
+            self.newPort = self.newPortNumber1 * 256 + self.newPortNumber2
+            print('new port', self.newPort)
 
-        self.serverSock = TCP_server.TCP(serverHost, self.newPort)
-        self.serverSock.bindSocket(serverHost, self.newPort)
-        self.serverSock.listen(5)
+            self.serverSock = TCP_server.TCP(serverHost, self.newPort)
+            self.serverSock.bindSocket(serverHost, self.newPort)
+            self.serverSock.listen(5)
 
-        tempServerhost = serverHost.replace('.', ',')
-        # self.ftp_client_control_connection.transmitAll('227 Entering passive mode' + '(' + tempServerhost + ','
-        #                                             + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
+            tempServerhost = serverHost.replace('.', ',')
+            # self.ftp_client_control_connection.transmitAll('227 Entering passive mode' + '(' + tempServerhost + ','
+            #                                        + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
 
-        self.transmitControlCommand('227 Entering passive mode' + '(' + tempServerhost + ','
-                                    + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
-        print('After 2')
+            self.transmitControlCommand('227 Entering passive mode' + '(' + tempServerhost + ','
+                                        + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
+            print('After 2')
 
     def SYST(self):
         self.clientSocket.send(("215 Windows " + Line_terminator).encode(codeType))
@@ -213,6 +273,15 @@ class FTP_Server(threading.Thread):
             self.transmitControlCommand('200 ASCII mode set')
         elif self.mode == 'I':
             self.transmitControlCommand('200 Binary mode set')
+
+    def NOOP(self):
+        self.transmitControlCommand('200 OK')
+
+    def PORT(self, port):
+        self.isChosenPort = True
+        self.clientChosenPort = int(port)
+        self.transmitControlCommand('200 Port ' +port+' will now be used')
+
 
     def transmitControlCommand(self, message):
         self.clientSocket.sendall((message + Line_terminator).encode(codeType))
