@@ -68,10 +68,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def btn_loadfile_handler(self):
         filename, _ = QFileDialog.getOpenFileName(self, 'Open File', '', '', 'All files(*.*)')
         if filename:
-            with open(filename, 'r') as f:
+            with open(filename, 'rb') as f:
                 file = f.read()
                 self._uploadedFile = file
-                self.td_server_response.setText(self._uploadedFile)
+                # self.td_server_response.setText(self._uploadedFile)
         else:
             print("No filename")
 
@@ -146,12 +146,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def btn_moveto_path_handler(self):
         path = self.le_pathto_moveto.text()
-        self._server_message += self._ftp_client.getServerMessage()
-        if self._loggedIn and self._userAction == 'Move':
+        if path == '':
+            self._ftp_client.cdup()
+        elif self._loggedIn and self._userAction == 'Move':
             self._ftp_client.cwd(path)
         else:
             print("Did not change directories")
-
+        self._server_message += self._ftp_client.getServerMessage()
         self.td_server_response.setText(self._server_message)
 
 
