@@ -130,6 +130,7 @@ class FTP_Client:
         self.clientSocket.sendall(('RETR' + ' ' + path + Line_terminator).encode(codeType))
         response2 = self.clientSocket.recv(8192).decode(codeType)
         print(response2)
+
         file = self._tcp_data.recv(8192)
         while 1:
             temp = self._tcp_data.recv(8192)
