@@ -46,7 +46,7 @@ class FTPclient:
         server_resp = self._tcp_cmd.receive(8192)
         s += str(server_resp)
         self._server_response = s
-        print(self._server_response)
+        # print(self._server_response)
 
         if USER_LOGIN_SUCCESS_CODE == self.whatIsTheCode(server_resp):
             return True
@@ -66,9 +66,10 @@ class FTPclient:
         self.pasv()
 
     def quit(self):
+        self._server_response = ''
         self._tcp_cmd.transmit('QUIT' + CRLF)
-        server_resp = self._tcp_cmd.receive()
-        print(server_resp)
+        self._server_response += self._tcp_cmd.receive()
+
 
     def pasv(self):
         self._tcp_cmd.transmit('PASV' + SP + CRLF)
@@ -79,7 +80,7 @@ class FTPclient:
         return self._tcp_data
 
     def list(self):
-        self._server_response =''
+        self._server_response = ''
         self.pasv()
         self._tcp_cmd.transmit('LIST' + SP + CRLF)
         self._server_response = str(self._tcp_cmd.receive())
@@ -90,7 +91,6 @@ class FTPclient:
         self._server_response += str(self._tcp_data.receive())
         print(self._server_response)
         self._tcp_data.close()
-        print('Closing Data Port: ' + str(self._data_port))
 
     def retr(self, path):
         self.pasv()

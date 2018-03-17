@@ -171,16 +171,6 @@
      <string>Action</string>
     </property>
    </widget>
-   <widget class="QTreeView" name="tree_local">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>300</y>
-      <width>241</width>
-      <height>192</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_proceed">
     <property name="geometry">
      <rect>
@@ -193,6 +183,21 @@
     <property name="text">
      <string>Proceed</string>
     </property>
+   </widget>
+   <widget class="QTreeWidget" name="tree_local">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>320</y>
+      <width>256</width>
+      <height>192</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string notr="true">1</string>
+     </property>
+    </column>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>

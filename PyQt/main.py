@@ -49,22 +49,49 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.comboBox_userAction.currentIndexChanged[str].connect(self.comboBox_userAction_handler)
         self.btn_proceed.pressed.connect(self.btn_proceed_handler)
 
+        # QTree
+        self.tree_local.setColumnWidth(1, 150)
+        self.tree_local.setColumnWidth(2, 150)
+        self.tree_local.setIconSize(QSize(20, 20))
+        self.tree_local.setRootIsDecorated(False)
+        self.tree_local.setHeaderLabels(('Name', 'Size'))
+        self.tree_local.header().setStretchLastSection(False)
+
+
+
     # CONNECTION BUTTONS HANDLERS
     def btn_connect_handler(self):
         ftp_server_address = self.le_ftp_server_address.text()
         username = self.le_username.text()
         password = self.le_password.text()
-        self._loggedIn = self._ftp_client.login(ftp_server_address, username, password)
-        self._server_message = self._ftp_client.getServerMessage()
-        self.td_server_response.setText(self._server_message)
-        print(self._server_message)
+        if len(ftp_server_address) > 3:
+            self._loggedIn = self._ftp_client.login(ftp_server_address, username, password)
+            self._server_message = self._ftp_client.getServerMessage()
+            self.td_server_response.setText(self._server_message)
+            # print(self._server_message)
+        else:
+            pass
 
-        if self._loggedIn == True:
+        if self._loggedIn:
             # lock all the inputs for user name and servers.
-            print('Logged IN')
+            self.le_username.setReadOnly(True)
+            self.le_password.setReadOnly(True)
+            self.le_ftp_server_address.setReadOnly(True)
+        else:
+            # Handled a failed scenario
+            pass
 
     def btn_disconnect_handler(self):
-        self._ftp_client.quit()
+        if self._loggedIn:
+            self._loggedIn = False
+            self._ftp_client.quit()
+            self._server_message += self._ftp_client.getServerMessage()
+            self.td_server_response.setText(self._server_message)
+            self.le_username.setReadOnly(False)
+            self.le_password.setReadOnly(False)
+            self.le_ftp_server_address.setReadOnly(False)
+        else:
+            pass # Not logged in message
 
     # RADIO BUTTON HANDLERS
     def cb_show_password_handler(self, s):
