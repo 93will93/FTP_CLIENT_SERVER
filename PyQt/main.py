@@ -21,6 +21,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._ftp_client = FTPClient_.FTPclient()
         self._userAction = ''
         self._loggedIn = False
+        self._uploadedFile = None
         # Setting up check list
         self.cb_show_password.setChecked(False)
 
@@ -32,11 +33,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lb_ftp_server_address.setFont(f)
         self.lb_server_response.setFont(f)
         self.lb_action.setFont(f)
+        self.lb_pathto_moveto.setFont(f)
 
         # Setting up line edits (User Input textbox)
         self.le_ftp_server_address.setPlaceholderText('i.e ftp.mirror.ac.za')
         self.le_username.setPlaceholderText('hint: Your account username')
         self.le_password.setPlaceholderText('hint: Your account password')
+        self.le_pathto_moveto.setPlaceholderText('hint: ?/home/documents')
         self.le_password.setEchoMode(PASSWORD_MODE)  # Hides the text
 
         # Setting up Combo Box
@@ -48,16 +51,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cb_show_password.stateChanged.connect(self.cb_show_password_handler)
         self.comboBox_userAction.currentIndexChanged[str].connect(self.comboBox_userAction_handler)
         self.btn_proceed.pressed.connect(self.btn_proceed_handler)
+        self.btn_loadfile.pressed.connect(self.btn_loadfile_handler)
+        self.btn_sendto_server.pressed.connect(self.btn_sendto_server_handler)
+        self.btn_moveto_path.pressed.connect(self.btn_moveto_path_handler)
 
         # QTree
-        self.tree_local.setColumnWidth(1, 150)
-        self.tree_local.setColumnWidth(2, 150)
-        self.tree_local.setIconSize(QSize(20, 20))
-        self.tree_local.setRootIsDecorated(False)
-        self.tree_local.setHeaderLabels(('Name', 'Size'))
-        self.tree_local.header().setStretchLastSection(False)
+        self.treeWidget.setColumnWidth(1, 150)
+        self.treeWidget.setColumnWidth(2, 150)
+        self.treeWidget.setIconSize(QSize(20, 20))
+        self.treeWidget.setRootIsDecorated(False)
+        self.treeWidget.setHeaderLabels(('Name', 'Size'))
+        self.treeWidget.header().setStretchLastSection(False)
 
 
+    # LOADING TO SERVER HANDLER
+    def btn_loadfile_handler(self):
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open File', '', '', 'All files(*.*)')
+        if filename:
+            with open(filename, 'r') as f:
+                file = f.read()
+                self._uploadedFile = file
+                self.td_server_response.setText(self._uploadedFile)
+        else:
+            print("No filename")
+
+    def btn_sendto_server_handler(self):
+        path = self._le_uploadPath.text()
+        print(path)
+        if len(path) < 1:
+            path = '/'
+        if self._loggedIn and self._userAction == 'Upload':
+            self._ftp_client.stor(path, self._uploadedFile)
+        else:
+            print("Cannot Upload")
+        self._server_message += self._ftp_client.getServerMessage()
+        self.td_server_response.setText(self._server_message)
 
     # CONNECTION BUTTONS HANDLERS
     def btn_connect_handler(self):
@@ -115,6 +143,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print(self._userAction)
         else:
             print("You are not logged in")
+
+    def btn_moveto_path_handler(self):
+        path = self.le_pathto_moveto.text()
+        self._server_message += self._ftp_client.getServerMessage()
+        if self._loggedIn and self._userAction == 'Move':
+            self._ftp_client.cwd(path)
+        else:
+            print("Did not change directories")
+
+        self.td_server_response.setText(self._server_message)
 
 
 if __name__ == '__main__':

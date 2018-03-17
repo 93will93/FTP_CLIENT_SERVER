@@ -133,20 +133,16 @@ class FTPclient:
         server_response = self._tcp_cmd.receive()
         print(server_response)
 
-    def stor(self, path):
-        name = input("Enter File name to upload: ")
+    def stor(self, path, name):
         fp = open(name, 'rb')
         self.pasv()
         self._tcp_cmd.transmit('TYPE I' + CRLF)
-        response = self._tcp_cmd.receive(8192)
-        print(response, '@@@@@')
+        s = str(self._tcp_cmd.receive(8192))
 
         self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
-        response = self._tcp_cmd.receive(8192)
-        print(response + '!!!!!')
+        s += str(self._tcp_cmd.receive(8192))
 
         data = fp.readline(8192)
-
         while True:
             self._tcp_data.transmitAll(data)
             buffer = fp.readline(8192)
@@ -157,8 +153,9 @@ class FTPclient:
         print("Awaiting Response")
 
         self._tcp_data.close()
-        response = self._tcp_cmd.receive(8192)
-        print(response)
+        s += str(self._tcp_cmd.receive(8192))
+        self._server_response = s
+        print(self._server_response)
         fp.close()
 
     def pasvModeStringHandling(self, server_resp):

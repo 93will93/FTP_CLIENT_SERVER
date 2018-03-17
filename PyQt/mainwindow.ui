@@ -184,10 +184,10 @@
      <string>Proceed</string>
     </property>
    </widget>
-   <widget class="QTreeWidget" name="tree_local">
+   <widget class="QTreeWidget" name="treeWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>390</x>
       <y>320</y>
       <width>256</width>
       <height>192</height>
@@ -198,6 +198,104 @@
       <string notr="true">1</string>
      </property>
     </column>
+   </widget>
+   <widget class="QPushButton" name="btn_loadfile">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>330</y>
+      <width>71</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Load File</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_sendto_server">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>360</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Send To Server</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="le_uploadPath">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>330</y>
+      <width>113</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="le_pathto_moveto">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>280</y>
+      <width>113</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_moveto_path">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>280</y>
+      <width>71</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Move to</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_pathto_moveto">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>260</y>
+      <width>47</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Path</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lb_uploadto_path">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>310</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Path on Server</string>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBar">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>360</y>
+      <width>111</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>24</number>
+    </property>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
