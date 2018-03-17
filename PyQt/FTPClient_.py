@@ -12,25 +12,42 @@ USER_LOGIN_SUCCESS_CODE = 230
 ENTERING_PASV_MODE_CODE = 227
 CWD_COMMAND_SUCCESSFUL = 250
 
-class FTPclient:
-    def __init__(self, ftp_server, user='', password=''):
-        self._ftp_server = ftp_server
-        self._user = user
-        self._data_port = None
-        self._tcp_data = None
-        self._working_dir = '/'
-        # self._password = password // We should probably not store user passwords
-        self._tcp_cmd = TCP.TCP(self._ftp_server, FTP_PORT)
-        self._welcome_msg = self._tcp_cmd.receive()
-        print(self._welcome_msg)
-        self.login(self._user, password)
 
-    def login(self, user, password):
+class FTPclient:
+    def __init__(self):
+        self._ftp_server = ''
+        self._user = ''
+        self._working_dir = '/'
+        self._server_response = ''
+        self._welcome_message = ''
+
+        self._data_port = None
+        # TCP connections
+        self._tcp_data = None
+        self._tcp_cmd = None
+
+    def getServerMessage(self):
+        return self._server_response
+
+    def getWelcomeMessage(self):
+        return self._welcome_message
+
+    def login(self, ftp, user='', password=''):
+        self._server_response = ''
+        self._ftp_server = ftp
+        self._user = user
+
+        self._tcp_cmd = TCP.TCP(self._ftp_server, FTP_PORT)
+        s = str(self._tcp_cmd.receive())
         self._tcp_cmd.transmit('USER' + SP + user + CRLF)
         server_resp = self._tcp_cmd.receive()
+        s += str(server_resp)
         self._tcp_cmd.transmit('PASS' + SP + password + CRLF)
-        s = self._tcp_cmd.receive(8192)
-        print(server_resp)
+        server_resp = self._tcp_cmd.receive(8192)
+        s += str(server_resp)
+        self._server_response = s
+        print(self._server_response)
+
         if USER_LOGIN_SUCCESS_CODE == self.whatIsTheCode(server_resp):
             return True
 
@@ -225,7 +242,8 @@ if __name__ == '__main__':
     localhost = 'localhost'
     test_ftp = 'speedtest.tele2.net'
 
-    client = FTPclient(eie_ftp, eie_user, eie_pass)
+    client = FTPclient()
+    client.login(mirror_ftp, '', '')
     # client = FTPclient(eie_ftp, eie_user, eie_pass)
     # client = FTPclient(localhost, 'will', '')
 
@@ -283,4 +301,3 @@ if __name__ == '__main__':
             x = input('What do you need help on: ')
             client.help(x)
 
-print('Main loop Exit')
