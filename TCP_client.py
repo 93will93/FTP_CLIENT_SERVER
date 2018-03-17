@@ -6,11 +6,12 @@ ENCODING_SCHEME = 'UTF-8'
 
 
 class TCP:
-    def __init__(self, serverSocket):
+    def __init__(self, serverSocket,clientSocket, clientAdress):
 
         self._serverSocket = serverSocket
-        self._clientAddress = None
-        self._clientSocket = None
+        self._clientAddress = clientAdress
+        self._clientSocket = clientSocket
+        # self.transmitAll("welcome")
 
     def transmit(self, s: object) -> object:
         self._clientSocket.send(s.encode(ENCODING_SCHEME))

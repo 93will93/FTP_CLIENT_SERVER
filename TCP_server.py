@@ -10,7 +10,11 @@ class TCP:
         self._serverAdress = serverAdress
         self._serverPort = serverPort
         self._serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._serverSocket.bind(('', self._serverPort))
+        self._clientSocket =None
+        self._clientAddress = None
+        # self._serverSocket.bind(('', self._serverPort))
+
+
         # self._clientAddress = None
         # self._clientSocket = None
 
@@ -38,8 +42,28 @@ class TCP:
     #     if self._clientSocket != None:
     #         self._clientSocket.close()
 
+    def transmitAll(self, s):
+        self._serverSocket.sendall(s.encode(ENCODING_SCHEME))
+
+    def acceptConnection(self):
+        self._clientSocket, self._clientAddress =  self._serverSocket.accept()
+
     def getServerSocket(self):
         return self._serverSocket
+
+    def getServerAdress(self):
+        return self._serverAdress
+
+    def getClientSocket(self):
+        return self._clientSocket
+
+    def getClientAdress(self):
+        return self._clientAddress
+
+    def bindSocket(self, address, port):
+        self._serverSocket.bind((address, port))
+
+
 
     def close(self):
         self._serverSocket.close()

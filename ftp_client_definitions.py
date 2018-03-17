@@ -1,41 +1,44 @@
 from socket import *
 import time
 
-serverName = '127.0.0.1'
+# serverName = 'localhost'
+# serverName = '127.0.0.1'
 # serverName = 'ftp.uconn.edu'
-# serverName = "ftp.mirror.ac.za"
+serverName = "ftp.mirror.ac.za"
 # serverName = 'elen4017.ug.eie.wits.ac.za'
 
-serverPort = 12000
+serverPort = 21
 clientSocket = socket(AF_INET, SOCK_STREAM)
 codeType = "UTF-8"
 Line_terminator = '\r\n'
 ENTERING_PASV_MODE_CODE = 227
 
-clientSocket.connect((serverName, serverPort))
-print("Connected")
-clientSocket.sendall(("YES").encode(codeType))
-print(clientSocket.recv(8192).decode(codeType))
+# clientSocket.connect((serverName, serverPort))
+# print("Connected to server")
+# clientSocket.sendall(("YES").encode(codeType))
+# print(clientSocket.recv(8192).decode(codeType))
 
 class FTP_Client:
     def __init__(self, servername, serverPort, clientSocket=None):
         self.serverName = servername
         self.serverPort = serverPort
         self.clientSocket = clientSocket
-        # self.username = "anonymous"
-        # self.password = "anonymous@"
-        self.username = "test"
-        self.password = "12345"
+        # self.Connect_Control_Socket(self.clientSocket)
+        self.username = "anonymous"
+        self.password = "anonymous@"
+        # self.username = "test"
+        # self.password = "12345"
 
         self.account = ""
         self._data_port = None
         self._tcp_data = None
-        self.Connect_Control_Socket(self.clientSocket)
+
         self._tcp_IP = None
 
     def Connect_Control_Socket(self, clientSocket):
         clientSocket.connect((self.serverName, self.serverPort))
         responseMessage = self.clientSocket.recv(8192).decode(codeType)
+        print("Connected to server")
         print(responseMessage)
         print("##############")
 
@@ -44,10 +47,12 @@ class FTP_Client:
         self.password = input("Please enter your password")
 
     def login(self):
-        self.clientSocket.sendall(('USER ' + self.username + Line_terminator).encode(codeType))
+        self.Connect_Control_Socket(self.clientSocket)
+
+        self.clientSocket.sendall(('USER'+ ' ' + self.username + Line_terminator).encode(codeType))
         serverResponse = self.clientSocket.recv(2048).decode(codeType)
         print(serverResponse)
-        self.clientSocket.sendall(('PASS ' + self.password + Line_terminator).encode(codeType))
+        self.clientSocket.sendall(('PASS'+' ' + self.password + Line_terminator).encode(codeType))
         serverResponse = self.clientSocket.recv(2048).decode(codeType)
         print(serverResponse)
         # self.clientSocket.sendall(('ACCT '+self.account + Line_terminator).encode(codeType))
@@ -70,10 +75,22 @@ class FTP_Client:
     def cmdLIST(self):
         self.cmdPASV()
         self.createNewTCPConnection(self._data_port)
-        self.clientSocket.sendall(('List ' + Line_terminator).encode(codeType))
+        self.clientSocket.sendall(('List' + Line_terminator).encode(codeType))
         response = self.clientSocket.recv(8192).decode(codeType)
         print(response)
+        # self.createNewTCPConnection(self._data_port)
+
         list = self._tcp_data.recv(8192).decode(codeType)
+
+        # file = self._tcp_data.recv(8192)
+        while 1:
+            temp = self._tcp_data.recv(8192).decode(codeType)
+            if not temp:
+                break
+            list = list + temp
+
+
+
         print(list)
         secondResponse = self.clientSocket.recv(8192).decode(codeType)
         print(secondResponse, '###')
@@ -97,14 +114,16 @@ class FTP_Client:
     def cmdPASV(self):
         self.clientSocket.sendall(('PASV' + Line_terminator).encode(codeType))
         pasvResp = self.clientSocket.recv(2048).decode(codeType)
-        print(pasvResp)
-        print(type(pasvResp))
+
         self._tcp_IP, self._data_port = self.pasvModeStringHandling(pasvResp)
         print(self._tcp_IP, " ", self._data_port)
+        # self.createNewTCPConnection(self._data_port)
+        # print(pasvResp)
+        # print(type(pasvResp))
 
     def cmdRETR(self, path):
         self.cmdPASV()
-        self.createNewTCPConnection(self._data_port)
+        # self.createNewTCPConnection(self._data_port)
         self.clientSocket.sendall(('TYPE I' + Line_terminator).encode(codeType))
         response = self.clientSocket.recv(8192).decode(codeType)
         print(response)
@@ -222,46 +241,46 @@ class FTP_Client:
         return server_ip, self._data_port
 
 
-# ftp = FTP_Client(serverName, serverPort, clientSocket)
-# ftp.login()
-#
-# while 1:
-#     message = input("Enter command or 'Q' to quit session: ")
-#
-#     if message == "LIST":
-#         ftp.cmdLIST()
-#
-#     if message == "PASV":
-#         ftp.cmdPASV()
-#
-#     if message == "PWD":
-#         ftp.cmdPWD()
-#
-#     if message == "CWD":
-#         path = input("Enter path extentension")
-#         ftp.cmdCWD(path)
-#
-#     if message == "RETR":
-#         path = input("Enter file to download")
-#         ftp.cmdRETR(path)
-#
-#     if message == "CDUP":
-#         ftp.cmdCDUP()
-#
-#     if message == "Q":
-#         break
-#
-#     if message == "STOR":
-#         path = input("Enter path to upload")
-#         ftp.cmdSTOR(path)
-#
-#     if message == 'MKD':
-#         ftp.cmdMKD()
-#
-#     if message == 'RMD':
-#         ftp.cmdRMD()
-#
-#     if message == 'DELE':
-#         ftp.cmdDELE()
-#
-# ftp.closeConnectcion()
+ftp = FTP_Client(serverName, serverPort, clientSocket)
+ftp.login()
+
+while 1:
+    message = input("Enter command or 'Q' to quit session: ")
+
+    if message == "LIST":
+        ftp.cmdLIST()
+
+    if message == "PASV":
+        ftp.cmdPASV()
+
+    if message == "PWD":
+        ftp.cmdPWD()
+
+    if message == "CWD":
+        path = input("Enter path extentension")
+        ftp.cmdCWD(path)
+
+    if message == "RETR":
+        path = input("Enter file to download")
+        ftp.cmdRETR(path)
+
+    if message == "CDUP":
+        ftp.cmdCDUP()
+
+    if message == "Q":
+        break
+
+    if message == "STOR":
+        path = input("Enter path to upload")
+        ftp.cmdSTOR(path)
+
+    if message == 'MKD':
+        ftp.cmdMKD()
+
+    if message == 'RMD':
+        ftp.cmdRMD()
+
+    if message == 'DELE':
+        ftp.cmdDELE()
+
+ftp.closeConnectcion()
