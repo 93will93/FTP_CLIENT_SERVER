@@ -12,8 +12,8 @@ Line_terminator = '\r\n'
 serverPort = 12000
 serverHost = '127.0.0.1'
 commandList = ['USER', 'PASS', 'PWD', 'PASV', 'LIST', 'SYST', 'TYPE',
-               'RETR', 'STOR', 'QUIT','CWD' ,'CDUP', 'MKD', 'RMD','DELE'
-               ,'NOOP', 'PORT']
+               'RETR', 'STOR', 'QUIT', 'CWD', 'CDUP', 'MKD', 'RMD', 'DELE'
+               , 'NOOP', 'PORT']
 # serverSocket = socket(AF_INET, SOCK_STREAM)
 # serverSocket.bind(('', serverPort))
 
@@ -111,7 +111,7 @@ class FTP_Server(threading.Thread):
         print(os.getenv('HOME'))
 
     def CWD(self, path):
-        newPath = os.path.join(os.getcwd(),path)
+        newPath = os.path.join(os.getcwd(), path)
         if not os.path.exists(newPath):
             self.transmitControlCommand('550 Directory does not exist')
             return
@@ -131,7 +131,7 @@ class FTP_Server(threading.Thread):
         newPath = os.path.join(os.getcwd(), path)
         if not os.path.exists(newPath):
             os.makedirs(newPath)
-            self.transmitControlCommand('257 '+ path+ ' has been created')
+            self.transmitControlCommand('257 ' + path + ' has been created')
         else:
             self.transmitControlCommand('550 file could not be created')
 
@@ -142,16 +142,16 @@ class FTP_Server(threading.Thread):
             return
         else:
             os.rmdir(folderToBeDeleted)
-            self.transmitControlCommand('257 ' + folderName +' folder has been deleted')
+            self.transmitControlCommand('257 ' + folderName + ' folder has been deleted')
 
     def DELE(self, fileName):
-        fileToBeDeleted = os.path.join(os.getcwd(),fileName)
+        fileToBeDeleted = os.path.join(os.getcwd(), fileName)
         if not os.path.exists(fileToBeDeleted):
-            self.transmitControlCommand('550 '+ fileName + ' does not exist')
+            self.transmitControlCommand('550 ' + fileName + ' does not exist')
             return
         else:
             os.remove(fileToBeDeleted)
-            self.transmitControlCommand('250 ' + fileName + ' has been deleted' )
+            self.transmitControlCommand('250 ' + fileName + ' has been deleted')
 
     def openDataChannel(self):
         self.serverSock.acceptConnection()
@@ -196,7 +196,7 @@ class FTP_Server(threading.Thread):
             if self.mode == 'I':
                 self.dataSock.sendall((data))  # + Line_terminator).encode(codeType))
             else:
-                self.dataSock.sendall((data+Line_terminator).encode(codeType))
+                self.dataSock.sendall((data + Line_terminator).encode(codeType))
             buf = file.readline(8192)
             if not buf:
                 break
@@ -231,7 +231,7 @@ class FTP_Server(threading.Thread):
     def PASV(self):
         self.isPASV = True
         if self.isChosenPort == True:
-            self.serverSock = TCP_server.TCP(serverHost,  self.clientChosenPort)
+            self.serverSock = TCP_server.TCP(serverHost, self.clientChosenPort)
             self.serverSock.bindSocket(serverHost, self.clientChosenPort)
             self.serverSock.listen(5)
 
@@ -240,7 +240,7 @@ class FTP_Server(threading.Thread):
             #                                         + str(self.newPortNumber1) + ',' + str(self.newPortNumber2) + ')')
 
             self.transmitControlCommand('227 Entering passive mode' + '(' + tempServerhost + ','
-                                        +  str(self.clientChosenPort)+ ')')
+                                        + str(self.clientChosenPort) + ')')
         else:
             tempPortNum1 = random.randint(8, 256)
             tempPortNum2 = random.randint(1, 256)
@@ -277,11 +277,19 @@ class FTP_Server(threading.Thread):
     def NOOP(self):
         self.transmitControlCommand('200 OK')
 
-    def PORT(self, port):
+    def PORT(self, portCommand):
         self.isChosenPort = True
-        self.clientChosenPort = int(port)
-        self.transmitControlCommand('200 Port ' +port+' will now be used')
+        client_chosen_port  = portCommand.split(',')
+        temp = ''
+        for i in range(0, 4):
+            temp = temp + (client_chosen_port[i]) + '.'
+        server_ip = temp + client_chosen_port[3]
+        server_resp_port = client_chosen_port[-2:]
+        newport = int((int(server_resp_port[0]) * 256) + int(server_resp_port[1]))
 
+        print('Client ', self.clientAdress, ' will now pass data over port ' + str(newport))
+        self.clientChosenPort = int(newport)
+        self.transmitControlCommand('200 Port ' + str(self.clientChosenPort) + ' will now be used')
 
     def transmitControlCommand(self, message):
         self.clientSocket.sendall((message + Line_terminator).encode(codeType))

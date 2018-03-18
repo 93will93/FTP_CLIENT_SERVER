@@ -1,12 +1,11 @@
 import TCP_Client_Side
 
-
 CRLF = '\r\n'
 B_CRLF = b'\r\n'
 SP = ' '
 
 FTP_PORT = 12000
-
+localIP = '127.0.0.1'
 #  Server response Codes
 USER_LOGIN_SUCCESS_CODE = 230
 ENTERING_PASV_MODE_CODE = 227
@@ -27,7 +26,6 @@ class FTPclient:
         self._tcp_cmd = None
         self.isOwnPort = False
         self.ownPort = None
-
 
     def getServerMessage(self):
         return self._server_response
@@ -82,7 +80,7 @@ class FTPclient:
         return self._tcp_data
 
     def list(self):
-        self._server_response =''
+        self._server_response = ''
         self.pasv()
         self._tcp_cmd.transmit('LIST' + SP + CRLF)
         self._server_response = str(self._tcp_cmd.receive())
@@ -169,7 +167,7 @@ class FTPclient:
     def pasvModeStringHandling(self, server_resp):
         if self.isOwnPort == True:
             self._data_port = int(self.ownPort)
-            return '127.0.0.1',self._data_port
+            return '127.0.0.1', self._data_port
         else:
             if ENTERING_PASV_MODE_CODE != self.whatIsTheCode(server_resp):
                 return "Server did Not Respond"
@@ -177,7 +175,7 @@ class FTPclient:
             start_of_ip = server_resp.find('(')
             end_of_ip = server_resp.find(')')
 
-            server_resp = server_resp[start_of_ip+1:end_of_ip]
+            server_resp = server_resp[start_of_ip + 1:end_of_ip]
             # server_resp = server_resp[:end_of_ip]
 
             server_resp = server_resp.split(',')
@@ -197,13 +195,15 @@ class FTPclient:
             return server_ip, self._data_port
 
     def mkd(self):
-        path = input("Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
+        path = input(
+            "Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
         self._tcp_cmd.transmit('MKD' + SP + path + CRLF)
         response = self._tcp_cmd.receive(8192)
         print(response)
 
     def rmd(self):
-        path = input("Please ensure you are in the directory where the old sub-directory will be deleted\n, Enter name of directory to be deleted:  ")
+        path = input(
+            "Please ensure you are in the directory where the old sub-directory will be deleted\n, Enter name of directory to be deleted:  ")
         self._tcp_cmd.transmit('RMD' + SP + path + CRLF)
         response = self._tcp_cmd.receive(8192)
         print(response)
@@ -215,7 +215,7 @@ class FTPclient:
         doubleCheck = doubleCheck.upper()
 
         if doubleCheck == 'YES' or doubleCheck == 'Y':
-            self._tcp_cmd.transmit('DELE' + SP +path + CRLF)
+            self._tcp_cmd.transmit('DELE' + SP + path + CRLF)
             response = self._tcp_cmd.receive(8192)
             print(response)
         elif doubleCheck == 'No':
@@ -239,11 +239,18 @@ class FTPclient:
         self._tcp_data.close()
         print(dat)
 
+    # Just need to fix how the port number is either transmitted or recieved, it has
+    # a specific format
     def port(self):
         self.isOwnPort = True
         port = input('Enter Port number wanting to be used for data connection: ')
-        self.ownPort = port
-        self._tcp_cmd.transmit('PORT' + SP + port + CRLF)
+        self.ownPort = int(port)
+        serverHost = localIP.split('.')
+        portRepresentation = [repr(self.ownPort // 256), repr(self.ownPort % 256)]
+        portCommand = serverHost+portRepresentation
+        cmdPORT = 'PORT ' + ','.join(portCommand)
+        self._tcp_cmd.transmit(cmdPORT + CRLF)
+        print(cmdPORT)
         response = self._tcp_cmd.receive()
         print(response)
 
@@ -270,8 +277,6 @@ if __name__ == '__main__':
     client.login(localIP, 'test', '12345')
     # client = FTPclient(eie_ftp, eie_user, eie_pass)
     # client = FTPclient(localhost, 'will', '')
-
-
 
     # client.pasv()
     # client.list()
@@ -301,7 +306,6 @@ if __name__ == '__main__':
             client.cdup()
 
         if message == 'STOR':
-
             path = input("Enter path extension: ")
             client.stor(path)
 
@@ -327,4 +331,3 @@ if __name__ == '__main__':
 
         if message == 'PORT':
             client.port()
-

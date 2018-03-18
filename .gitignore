@@ -16,3 +16,5 @@ rfc\.pdf
 *.png
 
 *.pdf
+
+test\.py
