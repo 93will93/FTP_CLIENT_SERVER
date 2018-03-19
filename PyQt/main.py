@@ -22,8 +22,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._ftp_client = FTPClient_.FTPclient()
         self._userAction = ''
         self._download_path = ''
+        self._uploadFile = ''
         self._loggedIn = False
-        self._uploadedFile = None
         # Setting up check list
         self.cb_show_password.setChecked(False)
         self.pb_upload.setValue(0)
@@ -40,6 +40,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lb_movepath.setFont(f)
         self.lb_upload_path.setFont(f)
         self.lb_filename.setFont(f)
+        self.lb_create_file.setFont(f)
+        self.lb_delete_directory.setFont(f)
 
         # Setting up line edits (User Input textbox)
         self.le_ftp_server_address.setPlaceholderText('i.e ftp.mirror.ac.za')
@@ -63,31 +65,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.btn_upload.clicked.connect(self.uploadProgress)
         self.btn_download.pressed.connect(self.btn_download_handler)
         self.btn_saveto.pressed.connect(self.btn_saveto_handler)
-
-
+        self.btn_create.pressed.connect(self.btn_create_handler)
+        self.btn_delete.pressed.connect(self.btn_delete_handler)
 
     # LOADING TO SERVER HANDLER
     def btn_loadfile_handler(self):
-        filename, _ = QFileDialog.getOpenFileName(self, 'Open File', '', '', 'All files(*.*)')
-        if filename:
-            with open(filename, 'rb') as f:
-                file = f.read()
-                self._uploadedFile = file
-                # self.td_server_response.setText(self._uploadedFile)
-        else:
-            print("No filename")
+        self._uploadFile, _ = QFileDialog.getOpenFileName(self, 'Open File', '', '', 'All files(*.*)')
+        print(self._uploadFile)
+        # if filename:
+        #     with open(filename, 'rb') as f:
+        #         file = f.read()
+        #         self._uploadedFile = file
+        #         # self.td_server_response.setText(self._uploadedFile)
+        # else:
+        #     print("No filename")
 
     def btn_upload_handler(self):
         path = self._le_uploadPath.text()
         print(path)
-        if len(path) < 1:
-            path = '/'
+
         if self._loggedIn and self._userAction == 'Upload':
-            self._ftp_client.stor(path, self._uploadedFile)
+            self._ftp_client.stor('ROADMAP.html', 'ROADMAP.html')
         else:
             print("Cannot Upload")
         self._server_message += self._ftp_client.getServerMessage()
-        self.td_server_response.setText(self._server_message)
+        # self.td_server_response.setText(self._server_message)
 
     # DOWNLOAD BUTTON HANDLER
     def btn_download_handler(self):
@@ -178,6 +180,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.completed += 0.0001
             self.progressBar.setValue(completed)
 
+    # CREATE A FILE
+    def btn_create_handler(self):
+        filename = self.le_create_file.text()
+        self._ftp_client.mkd(filename)
+
+    def btn_delete_handler(self):
+        filename = self.le_delete_file.text()
+        print(filename)
+        # self._ftp_client.dele(filename)
 
 if __name__ == '__main__':
     app = QApplication([])

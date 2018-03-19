@@ -136,7 +136,7 @@ class FTPclient:
         server_response = self._tcp_cmd.receive()
         print(server_response)
 
-    def stor(self, path, name):
+    def stor(self, path, name=''):
         fp = open(name, 'rb')
         self.pasv()
         self._tcp_cmd.transmit('TYPE I' + CRLF)
@@ -188,8 +188,8 @@ class FTPclient:
         print('Data Connection with IP: ' + server_ip + ':' + str(self._data_port))
         return server_ip, self._data_port
 
-    def mkd(self):
-        path = input("Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
+    def mkd(self, path):
+        # path = input("Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
         self._tcp_cmd.transmit('MKD' + SP + path + CRLF)
         response = self._tcp_cmd.receive(8192)
         print(response)
@@ -200,18 +200,18 @@ class FTPclient:
         response = self._tcp_cmd.receive(8192)
         print(response)
 
-    def dele(self):
-        path = input("Please insert the file name that you want to delete: ")
-        print("Are you sure you want to delete", path, "?")
-        doubleCheck = input("Please enter  'Yes' or 'No'")
-        doubleCheck = doubleCheck.upper()
+    def dele(self, fileName):
+        # path = input("Please insert the file name that you want to delete: ")
+        # print("Are you sure you want to delete", path, "?")
+        # doubleCheck = input("Please enter  'Yes' or 'No'")
+        # doubleCheck = doubleCheck.upper()
 
-        if doubleCheck == 'YES' or doubleCheck == 'Y':
-            self._tcp_cmd.transmit('DELE' + SP +path + CRLF)
-            response = self._tcp_cmd.receive(8192)
-            print(response)
-        elif doubleCheck == 'No':
-            print("Nothing has been deleted")
+        # if doubleCheck == 'YES' or doubleCheck == 'Y':
+        self._tcp_cmd.transmit('DELE' + SP +path + CRLF)
+        response = self._tcp_cmd.receive(8192)
+        print(response)
+        # elif doubleCheck == 'No':
+        #     print("Nothing has been deleted")
 
     def noop(self):
         self._tcp_cmd.transmit('NOOP' + CRLF)
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     test_ftp = 'speedtest.tele2.net'
 
     client = FTPclient()
-    client.login(mirror_ftp, '', '')
+    client.login('127.0.0.1', 'will', '1010')
     # client = FTPclient(eie_ftp, eie_user, eie_pass)
     # client = FTPclient(localhost, 'will', '')
 
