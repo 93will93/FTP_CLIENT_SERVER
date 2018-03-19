@@ -92,11 +92,11 @@ class FTPclient:
         print(self._server_response)
         self._tcp_data.close()
 
-    def retr(self, path):
+    def retr(self, file_to_download, save_file_to=''):
         self.pasv()
         self._tcp_cmd.transmit('TYPE I' + CRLF)
         print('Response to TYPE I: ' + str(self._tcp_cmd.receive(8192)))
-        self._tcp_cmd.transmit('RETR' + SP + path + CRLF)
+        self._tcp_cmd.transmit('RETR' + SP + file_to_download + CRLF)
         print('Response to RETR: ' + str(self._tcp_cmd.receive()))
 
         data = self._tcp_data.receive(8192)
@@ -107,7 +107,10 @@ class FTPclient:
             data += buffer
 
         print(str(self._tcp_data.receive(8192)))
-        f = open(path, "wb")
+        if save_file_to == '':
+            save_file_to += file_to_download
+
+        f = open(save_file_to, "wb")
         f.write(data.encode())
         f.close()
         self.closeDataPort()

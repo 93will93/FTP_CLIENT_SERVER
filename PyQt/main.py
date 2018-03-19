@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 import FTPClient_
+import os
 from MainWindow import Ui_MainWindow
 
 PASSWORD_MODE = 2
@@ -20,6 +21,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._server_message = ''
         self._ftp_client = FTPClient_.FTPclient()
         self._userAction = ''
+        self._download_path = ''
         self._loggedIn = False
         self._uploadedFile = None
         # Setting up check list
@@ -89,15 +91,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # DOWNLOAD BUTTON HANDLER
     def btn_download_handler(self):
-        path = self.le_download_path.text()
+        file_to_download = self.le_download_path.text()
+
         if self._loggedIn and self._userAction == 'Download':
-            self._ftp_client.retr(path)
+            self._ftp_client.retr(file_to_download, self._download_path)
         else:
             print('Not logged in')
         self._server_message += self._ftp_client.getServerMessage()
 
     def btn_saveto_handler(self):
-        filename, _ = QFileDialog.getOpenFileName(self, 'Save File', '', '', 'All files(*.*)')
+        self._download_path, _ = QFileDialog.getSaveFileName(self, 'Save File', '', '', 'All files(*.*)')
 
     # CONNECTION BUTTONS HANDLERS
     def btn_connect_handler(self):
