@@ -85,7 +85,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(path)
 
         if self._loggedIn and self._userAction == 'Upload':
-            self._ftp_client.stor('ROADMAP.html', 'ROADMAP.html')
+            self._ftp_client.stor(str(path), self._uploadFile)
         else:
             print("Cannot Upload")
         self._server_message += self._ftp_client.getServerMessage()
@@ -188,7 +188,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def btn_delete_handler(self):
         filename = self.le_delete_file.text()
         print(filename)
-        # self._ftp_client.dele(filename)
+        self._ftp_client.dele(str(filename))
+
 
 if __name__ == '__main__':
     app = QApplication([])
