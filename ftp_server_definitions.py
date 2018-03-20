@@ -203,7 +203,7 @@ class FTP_Server(threading.Thread):
             data = buf
         file.close()
         self.closeDataChannel()
-        self.transmitControlCommand('226 Transfer complete')
+        self.transmitControlCommand('226 this should not affect')
 
     def STOR(self, filename):
         uploadpath = os.path.join(self._PWD, filename)
@@ -226,7 +226,7 @@ class FTP_Server(threading.Thread):
         file.write(data)
         file.close()
         self.closeDataChannel()
-        self.transmitControlCommand('226 Transfer complete')
+        self.transmitControlCommand('226 this should not affec')
 
     def PASV(self):
         self.isPASV = True

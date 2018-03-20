@@ -4,7 +4,7 @@ CRLF = '\r\n'
 B_CRLF = b'\r\n'
 SP = ' '
 
-FTP_PORT = 12000
+FTP_PORT = 21
 localIP = '127.0.0.1'
 #  Server response Codes
 USER_LOGIN_SUCCESS_CODE = 230
@@ -274,7 +274,7 @@ if __name__ == '__main__':
     test_ftp = 'speedtest.tele2.net'
 
     client = FTPclient()
-    client.login(localIP, 'test', '12345')
+    client.login(localhost, 'test', '12345')
     # client = FTPclient(eie_ftp, eie_user, eie_pass)
     # client = FTPclient(localhost, 'will', '')
 
