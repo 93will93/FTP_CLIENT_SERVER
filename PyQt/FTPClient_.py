@@ -207,7 +207,7 @@ class FTPclient:
         # doubleCheck = doubleCheck.upper()
 
         # if doubleCheck == 'YES' or doubleCheck == 'Y':
-        self._tcp_cmd.transmit('DELE' + SP +path + CRLF)
+        self._tcp_cmd.transmit('DELE' + SP + path + CRLF)
         response = self._tcp_cmd.receive(8192)
         print(response)
         # elif doubleCheck == 'No':

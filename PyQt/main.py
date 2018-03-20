@@ -81,7 +81,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #     print("No filename")
 
     def btn_upload_handler(self):
-        path = self._le_uploadPath.text()
+        path = self.le_upload_path.text()
         print(path)
 
         if self._loggedIn and self._userAction == 'Upload':
