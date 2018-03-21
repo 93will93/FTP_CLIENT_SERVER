@@ -1,11 +1,12 @@
 import TCP_Client_Side
-
+import socket
+codeType = "UTF-8"
 CRLF = '\r\n'
 B_CRLF = b'\r\n'
 SP = ' '
 
-FTP_PORT = 21
-localIP = '127.0.0.1'
+FTP_PORT = 12000
+# localIP = '127.0.0.1'
 #  Server response Codes
 USER_LOGIN_SUCCESS_CODE = 230
 ENTERING_PASV_MODE_CODE = 227
@@ -27,6 +28,7 @@ class FTPclient:
         self.isOwnPort = False
         self.ownPort = None
 
+
     def getServerMessage(self):
         return self._server_response
 
@@ -38,7 +40,7 @@ class FTPclient:
         self._ftp_server = ftp
         self._user = user
 
-        self._tcp_cmd = TCP_Client_Side.TCP(self._ftp_server, FTP_PORT)
+        self._tcp_cmd = TCP_Client_Side.TCP(self._ftp_server, FTP_PORT ,True)
         s = str(self._tcp_cmd.receive())
         self._tcp_cmd.transmit('USER' + SP + user + CRLF)
         server_resp = self._tcp_cmd.receive()
@@ -72,48 +74,112 @@ class FTPclient:
         print(server_resp)
 
     def pasv(self):
+        self.isOwnPort = False
         self._tcp_cmd.transmit('PASV' + SP + CRLF)
         server_resp = self._tcp_cmd.receive()
         print(str(server_resp))
         server_ip, self._data_port = self.pasvModeStringHandling(server_resp)
-        self._tcp_data = TCP_Client_Side.TCP(self._ftp_server, self._data_port)
+        self._tcp_data = TCP_Client_Side.TCP(self._ftp_server, self._data_port, True)
         return self._tcp_data
+
 
     def list(self):
         self._server_response = ''
-        self.pasv()
-        self._tcp_cmd.transmit('LIST' + SP + CRLF)
-        self._server_response = str(self._tcp_cmd.receive())
-        self._server_response += str(self._tcp_cmd.receive())
-        # print(self._tcp_cmd.receive())
-        # print(self._tcp_cmd.receive())
+        if self.isOwnPort == True:
+            # dataSock = self.activePortSocket()
+            self.port()
+            sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            sock.bind((localIP, int(self.ownPort)))
+            sock.listen(1)
+            print(sock.getsockname())
 
-        self._server_response += str(self._tcp_data.receive())
-        print(self._server_response)
-        self._tcp_data.close()
-        print('Closing Data Port: ' + str(self._data_port))
+            print(self.ownPort)
+            self._tcp_cmd.transmit('LIST' + SP + CRLF)
+            self._server_response = self._tcp_cmd.receive()
+            print(self._server_response)
+            self._server_response = self._tcp_cmd.receive()
+            print(self._server_response)
+
+
+            if(self.whatIsTheCode(self._server_response) == 425):
+                print('Data connection was unsuccessful in creation')
+                sock.close()
+                return
+
+            activeDatasocket, activeSocketAdress = sock.accept()
+            print(activeSocketAdress)
+
+            list = activeDatasocket.recv(8192).decode(codeType)
+            while 1:
+                temp = activeDatasocket.recv(8192).decode(codeType)
+                if not temp:
+                    break
+                list = list + temp
+            activeDatasocket.close()
+            sock.close()
+
+
+            # self.pasv()
+            print(list)
+            print('Closing Data Port: ' + str(self.ownPort))
+        else:
+            self.pasv()
+            self._tcp_cmd.transmit('LIST' + SP + CRLF)
+            self._server_response = self._tcp_cmd.receive()
+            print(self._server_response)
+            self._server_response = self._tcp_cmd.receive()
+            print(self._server_response)
+            dataResponse = str(self._tcp_data.receive())
+            print(dataResponse)
+            self._tcp_data.close()
+            print('Closing Data Port: ' + str(self._data_port))
 
     def retr(self, path):
-        self.pasv()
-        self._tcp_cmd.transmit('TYPE I' + CRLF)
-        print('Response to TYPE I: ' + str(self._tcp_cmd.receive(8192)))
-        self._tcp_cmd.transmit('RETR' + SP + path + CRLF)
-        print('Response to RETR: ' + str(self._tcp_cmd.receive()))
 
-        data = self._tcp_data.receiveBinary()
-        while True:
-            buffer = self._tcp_data.receiveBinary()
-            if not buffer:
-                break
-            data += buffer
+        if self.isOwnPort == True:
+            self.port()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind((localIP, int(self.ownPort)))
+            sock.listen(1)
+            self._tcp_cmd.transmit('TYPE I' + CRLF)
+            print('Response to TYPE I: ' + str(self._tcp_cmd.receive(8192)))
+            self._tcp_cmd.transmit('RETR' + SP + path + CRLF)
+            print('Response to RETR: ' + str(self._tcp_cmd.receive()))
+            activeDatasocket, activeSocketAdress = sock.accept()
+            data = activeDatasocket.recv(8192)
+            while True:
+                buffer = activeDatasocket.recv(8192)
+                if not buffer:
+                    break
+                data += buffer
+            f = open(path, "wb")
+            f.write(data)
+            f.close()
+            response3 = self._tcp_cmd.receive()
+            print(response3)
+            activeDatasocket.close()
 
-        print(str(self._tcp_data.receive(8192)))
-        f = open(path, "wb")
-        f.write(data)
-        f.close()
-        response3 = self._tcp_cmd.receive()
-        print(response3)
-        self.closeDataPort()
+        else:
+            self.pasv()
+            self._tcp_cmd.transmit('TYPE I' + CRLF)
+            print('Response to TYPE I: ' + str(self._tcp_cmd.receive(8192)))
+            self._tcp_cmd.transmit('RETR' + SP + path + CRLF)
+            print('Response to RETR: ' + str(self._tcp_cmd.receive()))
+
+            data = self._tcp_data.receiveBinary()
+            while True:
+                buffer = self._tcp_data.receiveBinary()
+                if not buffer:
+                    break
+                data += buffer
+
+            print(str(self._tcp_data.receive(8192)))
+            f = open(path, "wb")
+            f.write(data)
+            f.close()
+            response3 = self._tcp_cmd.receive()
+            print(response3)
+            self.closeDataPort()
 
     def pwd(self):
         # self.createDataPortConnection()
@@ -137,67 +203,104 @@ class FTPclient:
         print(server_response)
 
     def stor(self, path):
-        name = input("Enter File name to upload: ")
-        fp = open(name, 'rb')
-        self.pasv()
-        self._tcp_cmd.transmit('TYPE I' + CRLF)
-        response = self._tcp_cmd.receive(8192)
-        print(response, '@@@@@')
+        if self.isOwnPort == True:
+            self.port()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind((localIP, int(self.ownPort)))
+            sock.listen(1)
+            name = input("Enter File name to upload: ")
+            fp = open(name, 'rb')
+            self._tcp_cmd.transmit('TYPE I' + CRLF)
+            response = self._tcp_cmd.receive(8192)
+            self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
+            response = self._tcp_cmd.receive(8192)
+            activeDatasocket, activeSocketAdress = sock.accept()
+            data = fp.readline(8192)
 
-        self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
-        response = self._tcp_cmd.receive(8192)
-        print(response + '!!!!!')
+            while True:
+                activeDatasocket.sendall(data)
+                buffer = fp.readline(8192)
+                if not buffer:
+                    break
+                data = buffer
 
-        data = fp.readline(8192)
+            print("Awaiting Response")
 
-        while True:
-            self._tcp_data.transmitAll(data)
-            buffer = fp.readline(8192)
-            if not buffer:
-                break
-            data = buffer
+            activeDatasocket.close()
+            response = self._tcp_cmd.receive(8192)
+            print(response)
+            fp.close()
+        else:
 
-        print("Awaiting Response")
+            name = input("Enter File name to upload: ")
+            fp = open(name, 'rb')
+            self.pasv()
+            self._tcp_cmd.transmit('TYPE I' + CRLF)
+            response = self._tcp_cmd.receive(8192)
+            print(response, '@@@@@')
 
-        self._tcp_data.close()
-        response = self._tcp_cmd.receive(8192)
-        print(response)
-        fp.close()
+            self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
+            response = self._tcp_cmd.receive(8192)
+            print(response + '!!!!!')
+
+            data = fp.readline(8192)
+
+            while True:
+                self._tcp_data.transmitAll(data)
+                buffer = fp.readline(8192)
+                if not buffer:
+                    break
+                data = buffer
+
+            print("Awaiting Response")
+
+            self._tcp_data.close()
+            response = self._tcp_cmd.receive(8192)
+            print(response)
+            fp.close()
 
     def pasvModeStringHandling(self, server_resp):
-        if self.isOwnPort == True:
-            self._data_port = int(self.ownPort)
-            return '127.0.0.1', self._data_port
-        else:
-            if ENTERING_PASV_MODE_CODE != self.whatIsTheCode(server_resp):
-                return "Server did Not Respond"
+        if ENTERING_PASV_MODE_CODE != self.whatIsTheCode(server_resp):
+            return "Server did Not Respond"
 
-            start_of_ip = server_resp.find('(')
-            end_of_ip = server_resp.find(')')
+        start_of_ip = server_resp.find('(')
+        end_of_ip = server_resp.find(')')
 
-            server_resp = server_resp[start_of_ip + 1:end_of_ip]
-            # server_resp = server_resp[:end_of_ip]
+        server_resp = server_resp[start_of_ip + 1:end_of_ip]
+        # server_resp = server_resp[:end_of_ip]
 
-            server_resp = server_resp.split(',')
+        server_resp = server_resp.split(',')
 
-            # Retrieving IP from the server response
-            # deliminating the IP by dot so as to get 192.134...
-            temp = ''
-            for i in range(0, 4):
-                temp = temp + (server_resp[i]) + '.'
+        # Retrieving IP from the server response
+        # deliminating the IP by dot so as to get 192.134...
+        temp = ''
+        for i in range(0, 4):
+            temp = temp + (server_resp[i]) + '.'
 
-            server_ip = temp + server_resp[3]
-            # Retrieving Port Number client must listen to
-            server_resp_port = server_resp[-2:]
-            # Formula to calculate port number
-            self._data_port = int((int(server_resp_port[0]) * 256) + int(server_resp_port[1]))
-            print('Data Connection with IP: ' + server_ip + ':' + str(self._data_port))
-            return server_ip, self._data_port
+        server_ip = temp + server_resp[3]
+        # Retrieving Port Number client must listen to
+        server_resp_port = server_resp[-2:]
+        # Formula to calculate port number
+        self._data_port = int((int(server_resp_port[0]) * 256) + int(server_resp_port[1]))
+        print('Data Connection with IP: ' + server_ip + ':' + str(self._data_port))
+        return server_ip, self._data_port
 
     def mkd(self):
         path = input(
             "Please ensure you are in the directory where the new sub-directory will be created, Enter new directory name: ")
         self._tcp_cmd.transmit('MKD' + SP + path + CRLF)
+        response = self._tcp_cmd.receive(8192)
+        print(response)
+
+    def mode(self):
+        modeCode = input('Enter MODE code, either "S", "B", "C": ')
+        self._tcp_cmd.transmit('MODE' + SP + modeCode+ CRLF)
+        response = self._tcp_cmd.receive(8192)
+        print(response)
+
+    def stru(self):
+        struCode = input('Enter File Structure "F", "R" or "P": ')
+        self._tcp_cmd.transmit('STRU' + SP + struCode + CRLF)
         response = self._tcp_cmd.receive(8192)
         print(response)
 
@@ -221,9 +324,27 @@ class FTPclient:
         elif doubleCheck == 'No':
             print("Nothing has been deleted")
 
+    def rnfr(self):
+        path = input('Enter file that needs to be renamed: ')
+        self._tcp_cmd.transmit('RNFR' + SP + path+ CRLF)
+        response = self._tcp_cmd.receive()
+        print(response)
+
+    def rnto(self):
+        newname = input('Enter the new name for the file: ')
+        self._tcp_cmd.transmit('RNTO' +SP +newname +CRLF)
+        response = self._tcp_cmd.receive()
+        print(response)
+
+
     def noop(self):
         self._tcp_cmd.transmit('NOOP' + CRLF)
         print(self._tcp_cmd.receive())
+
+    def syst(self):
+        self._tcp_cmd.transmit('SYST' + CRLF)
+        response = self._tcp_cmd.receive()
+        print(response)
 
     def help(self, about=''):
         self.pasv()
@@ -239,15 +360,15 @@ class FTPclient:
         self._tcp_data.close()
         print(dat)
 
-    # Just need to fix how the port number is either transmitted or recieved, it has
-    # a specific format
+
     def port(self):
         self.isOwnPort = True
+
         port = input('Enter Port number wanting to be used for data connection: ')
         self.ownPort = int(port)
         serverHost = localIP.split('.')
         portRepresentation = [repr(self.ownPort // 256), repr(self.ownPort % 256)]
-        portCommand = serverHost+portRepresentation
+        portCommand = serverHost + portRepresentation
         cmdPORT = 'PORT ' + ','.join(portCommand)
         self._tcp_cmd.transmit(cmdPORT + CRLF)
         print(cmdPORT)
@@ -258,23 +379,25 @@ class FTPclient:
 # Testing the class works with an open ftp server
 if __name__ == '__main__':
 
-    eie_ftp = 'ELEN4017.ug.eie.wits.ac.za'
-    eie_user = 'group14'
-    eie_pass = 'engaqu4a'
-
+    # eie_ftp = 'ELEN4017.ug.eie.wits.ac.za'
+    # eie_user = 'group14'
+    # eie_pass = 'engaqu4a'
+    #
     mirror_ftp = 'ftp.mirror.ac.za'
-
-    uccon_ftp = 'ftp.uconn.edu'
+    #
+    # uccon_ftp = 'ftp.uconn.edu'
     uccon_user = 'anonymous'
     uccon_pass = 'anonymous@'
-
-    localhost = 'localhost'
+    #
+    # localhost = 'localhost'
     localIP = '127.0.0.1'
-
-    test_ftp = 'speedtest.tele2.net'
+    # localIP = mirror_ftp
+    #
+    # test_ftp = 'speedtest.tele2.net'
 
     client = FTPclient()
-    client.login(localhost, 'test', '12345')
+    # client.login(localIP, uccon_user, uccon_pass)
+    client.login(localIP, 'test', '12345')
     # client = FTPclient(eie_ftp, eie_user, eie_pass)
     # client = FTPclient(localhost, 'will', '')
 
@@ -331,3 +454,19 @@ if __name__ == '__main__':
 
         if message == 'PORT':
             client.port()
+
+        if message == 'PASV':
+            client.pasv()
+
+        if message == 'MODE':
+            client.mode()
+
+        if message == 'STRU':
+            client.stru()
+
+        if message == 'SYST':
+            client.syst()
+
+        if message =='RNFR':
+            client.rnfr()
+            client.rnto()

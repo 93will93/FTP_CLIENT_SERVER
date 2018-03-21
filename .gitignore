@@ -1,20 +1,6 @@
 
 \.idea/
 
-*.bin
+PyQt/
 
 __pycache__/
-
-*.jpeg
-
-combined\.pdf
-
-*.txt
-
-rfc\.pdf
-
-*.png
-
-*.pdf
-
-test\.py

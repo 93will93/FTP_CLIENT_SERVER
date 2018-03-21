@@ -6,12 +6,18 @@ ENCODING_SCHEME = 'UTF-8'
 
 
 class TCP:
-    def __init__(self, serverAdress, serverPort):
+    def __init__(self, serverAdress, serverPort,passive):
         self._serverAdress = serverAdress
         self._serverPort = serverPort
         self._clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         add = (self._serverAdress, self._serverPort)
-        self._clientSocket.connect(add)
+        if passive == True:
+            self._clientSocket.connect(add)
+
+
+        else:
+            self._clientSocket.listen(1)
+
 
     def transmit(self, s: object) -> object:
         self._clientSocket.send(s.encode(ENCODING_SCHEME))
@@ -31,8 +37,13 @@ class TCP:
         serverResponse = self._clientSocket.recv(BUFFER_SIZE)
         return serverResponse
 
+    def getSocket(self):
+        return self._clientSocket
+
     def close(self):
         self._clientSocket.close()
+
+
 
 
 if __name__ == '__main__':
