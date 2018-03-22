@@ -25,6 +25,8 @@ class FTPclient:
         # TCP connections
         self._tcp_data = None
         self._tcp_cmd = None
+        self.isOwnPort = False
+        self.ownPort = None
 
     def getServerMessage(self):
         return self._server_response
@@ -83,7 +85,7 @@ class FTPclient:
         self._server_response = ''
         self.pasv()
         self._tcp_cmd.transmit('LIST' + SP + CRLF)
-        self._server_response = str(self._tcp_cmd.receive())
+        self._server_response += str(self._tcp_cmd.receive())
         self._server_response += str(self._tcp_cmd.receive())
         # print(self._tcp_cmd.receive())
         # print(self._tcp_cmd.receive())

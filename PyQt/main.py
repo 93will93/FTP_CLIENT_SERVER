@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 import FTPClient_
+import ftpclient
 import os
 from MainWindow import Ui_MainWindow
 
@@ -19,7 +20,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.show()
         self._server_message = ''
-        self._ftp_client = FTPClient_.FTPclient()
+        self._ftp_client = ftpclient.FTPclient()
         self._userAction = ''
         self._download_path = ''
         self._uploadFile = ''
