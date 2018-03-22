@@ -71,30 +71,28 @@ class FTP_Server(threading.Thread):
         while True:
             try:
                 incommingCommand = self.ftp_client_control_connection.receive()
-
-
-            except socket.error as err:
-                print(err)
-
+            except socket.error as error:
+                print(error)
             try:
-                cmd, arg = incommingCommand[:4].strip().upper(), incommingCommand[4:].strip() or None
-                if cmd in commandList:
-                    commandFunction = getattr(self, cmd)
-                    if cmd == 'QUIT':
+                ftpcommand = incommingCommand[:4].strip().upper()
+                functionArguments = incommingCommand[4:].strip() or None
+                if ftpcommand in commandList:
+                    commandFunction = getattr(self, ftpcommand)
+                    if ftpcommand == 'QUIT':
                         commandFunction()
                         break
-                    if arg == None:
+                    if functionArguments == None:
                         commandFunction()
-                    elif arg != None:
-                        commandFunction(arg)
-                elif cmd not in commandList:
+                    elif functionArguments != None:
+                        commandFunction(functionArguments)
+                elif ftpcommand not in commandList:
                     self.clientSocket.send(("502 Command not implemented " + Line_terminator).encode(codeType))
 
-            except AttributeError as err:
-                print(err)
+            except AttributeError as error:
+                print(error)
 
     def welcomeMessage(self):
-        self.transmitControlCommand('220 Welcome to FTP Global')
+        self.transmitControlCommand('220 Welcome to FTP Global by CAIO')
 
     def initiliizeLogger(self, username):
         fileName = username + '.txt'
@@ -192,6 +190,10 @@ class FTP_Server(threading.Thread):
 
     def DELE(self, fileName):
         self.logger.info('Command DELE ' + fileName)
+        if self.loggedIn == False:
+            self.transmitControlCommand('530 User not logged in')
+            self.logger.warning('Response DELE 530 Not logged in')
+            return
         fileToBeDeleted = os.path.join(self._PWD, fileName)
         if not os.path.exists(fileToBeDeleted):
             self.transmitControlCommand('550 ' + fileName + ' does not exist')
@@ -245,6 +247,10 @@ class FTP_Server(threading.Thread):
 
     def RETR(self, filename):
         self.logger.info('Command RETR ' + filename)
+        if self.loggedIn == False:
+            self.transmitControlCommand('530 User not logged in')
+            self.logger.warning('Response RETR 530 Not logged in')
+            return
         downloadPath = os.path.join(self._PWD, filename)
         if not os.path.exists(downloadPath):
             self.transmitControlCommand('550 file does not exist')
@@ -297,6 +303,10 @@ class FTP_Server(threading.Thread):
 
     def STOR(self, filename):
         self.logger.info('Command STOR ' + filename)
+        if self.loggedIn == False:
+            self.transmitControlCommand('530 User not logged in')
+            self.logger.warning('Response STOR 530 Not logged in')
+            return
         uploadpath = os.path.join(self._PWD, filename)
         try:
             if self.mode == 'I':
