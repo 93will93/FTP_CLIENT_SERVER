@@ -9,7 +9,7 @@ from MainWindow import Ui_MainWindow
 PASSWORD_MODE = 2
 NORMAL_MODE = 0
 
-POSSIBLE_CLIENT_OPERATIONS = ['', 'List', 'Upload', 'Download', 'Move', 'Delete']
+POSSIBLE_CLIENT_OPERATIONS = ['', 'List', 'Upload', 'Download', 'Move', 'Create', 'Delete']
 POSSIBLE_OPERATIONS_ACTION = {'': 0, 'List': 1, 'Upload': 2, 'Download': 3, 'Move': 4, 'Delete': 5}
 
 
@@ -36,7 +36,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lb_username.setFont(f)
         self.lb_ftp_server_address.setFont(f)
         self.lb_server_response.setFont(f)
-        self.lb_action.setFont(f)
+        # self.lb_action.setFont(f)
         self.lb_movepath.setFont(f)
         self.lb_upload_path.setFont(f)
         self.lb_filename.setFont(f)
@@ -44,21 +44,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lb_delete_directory.setFont(f)
 
         # Setting up line edits (User Input textbox)
-        self.le_ftp_server_address.setPlaceholderText('i.e ftp.mirror.ac.za')
-        self.le_username.setPlaceholderText('hint: Your account username')
-        self.le_password.setPlaceholderText('hint: Your account password')
-        self.le_move.setPlaceholderText('hint: /home/documents')
+        self.le_ftp_server_address.setPlaceholderText('mirror.ac.za')
+        self.le_username.setPlaceholderText(' username')
+        self.le_password.setPlaceholderText(' password')
+        self.le_move.setPlaceholderText('/home/documents')
         self.le_password.setEchoMode(PASSWORD_MODE)  # Hides the text
 
         # Setting up Combo Box
-        self.comboBox_userAction.addItems(POSSIBLE_CLIENT_OPERATIONS)
+        # self.comboBox_userAction.addItems(POSSIBLE_CLIENT_OPERATIONS)
 
         # Handling events
         self.btn_connect.pressed.connect(self.btn_connect_handler)
-        self.btn_disconnect.pressed.connect(self.btn_disconnect_handler)
+        # self.btn_disconnect.pressed.connect(self.btn_disconnect_handler)
+        self.btn_list.pressed.connect(self.btn_list_handler)
         self.cb_show_password.stateChanged.connect(self.cb_show_password_handler)
-        self.comboBox_userAction.currentIndexChanged[str].connect(self.comboBox_userAction_handler)
-        self.btn_proceed.pressed.connect(self.btn_proceed_handler)
+        # self.comboBox_userAction.currentIndexChanged[str].connect(self.comboBox_userAction_handler)
+        # self.btn_proceed.pressed.connect(self.btn_proceed_handler)
         self.btn_loadfile.pressed.connect(self.btn_loadfile_handler)
         self.btn_upload.pressed.connect(self.btn_upload_handler)
         self.btn_move.pressed.connect(self.btn_move_handler)
@@ -81,63 +82,68 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #     print("No filename")
 
     def btn_upload_handler(self):
-        path = self.le_upload_path.text()
-        print(path)
-
-        if self._loggedIn and self._userAction == 'Upload':
+        if self._loggedIn:
+            path = self.le_upload_path.text()
             self._ftp_client.stor(str(path), self._uploadFile)
         else:
-            print("Cannot Upload")
+            print("Cannot Upload \n PLEASE LOGIN TO A SERVER")
+
         self._server_message += self._ftp_client.getServerMessage()
-        # self.td_server_response.setText(self._server_message)
+        self.td_server_response.setText(self._server_message)
 
     # DOWNLOAD BUTTON HANDLER
     def btn_download_handler(self):
-        file_to_download = self.le_download_path.text()
-
-        if self._loggedIn and self._userAction == 'Download':
+        if self._loggedIn:
+            file_to_download = self.le_download_path.text()
             self._ftp_client.retr(file_to_download, self._download_path)
+            self._server_message += self._ftp_client.getServerMessage()
         else:
-            print('Not logged in')
-        self._server_message += self._ftp_client.getServerMessage()
+            self._server_message += 'Cannot Download \n PLEASE LOGIN TO A SERVER'
+            self.td_server_response.setText(self._server_message)
+
+        self._server_message += '\n'
 
     def btn_saveto_handler(self):
         self._download_path, _ = QFileDialog.getSaveFileName(self, 'Save File', '', '', 'All files(*.*)')
 
     # CONNECTION BUTTONS HANDLERS
     def btn_connect_handler(self):
-        ftp_server_address = self.le_ftp_server_address.text()
-        username = self.le_username.text()
-        password = self.le_password.text()
-        if len(ftp_server_address) > 3:
-            self._loggedIn = self._ftp_client.login(ftp_server_address, username, password)
-            self._server_message = self._ftp_client.getServerMessage()
-            self.td_server_response.setText(self._server_message)
-            # print(self._server_message)
-        else:
-            pass
-
-        if self._loggedIn:
+        if not self._loggedIn:
+            ftp_server_address = self.le_ftp_server_address.text()
+            username = self.le_username.text()
+            password = self.le_password.text()
+            if len(ftp_server_address) > 3:
+                self._loggedIn = self._ftp_client.login(ftp_server_address, username, password)
+                self._server_message = self._ftp_client.getServerMessage()
+                self.td_server_response.setText(self._server_message)
+                # print(self._server_message)
+            else:
+                pass
             # lock all the inputs for user name and servers.
             self.le_username.setReadOnly(True)
             self.le_password.setReadOnly(True)
             self.le_ftp_server_address.setReadOnly(True)
+            self.btn_connect.setText('Disconnect')
         else:
-            # Handled a failed scenario
-            pass
-
-    def btn_disconnect_handler(self):
-        if self._loggedIn:
             self._loggedIn = False
             self._ftp_client.quit()
+            self._server_message += '\n'
             self._server_message += self._ftp_client.getServerMessage()
             self.td_server_response.setText(self._server_message)
             self.le_username.setReadOnly(False)
             self.le_password.setReadOnly(False)
             self.le_ftp_server_address.setReadOnly(False)
-        else:
-            pass # Not logged in message
+            self.btn_connect.setText('Connect')
 
+    def btn_list_handler(self):
+        if self._loggedIn:
+            self._ftp_client.list()
+            if len(self._server_message) > 1:
+                self._server_message += '\n'
+            self._server_message += self._ftp_client.getServerMessage()
+            self.td_server_response.setText(self._server_message)
+        else:
+            self.td_server_response.setText('PLEASE LOGIN TO A SERVER')
     # RADIO BUTTON HANDLERS
     def cb_show_password_handler(self, s):
         if s == Qt.Checked:
@@ -146,32 +152,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.le_password.setEchoMode(PASSWORD_MODE)
 
     # COMBOBOX HANDLER ['':0, 'List':1, 'Upload':2, 'Download':3, 'Move':4, 'Delete':5]
-    def comboBox_userAction_handler(self, choice):
-        self._userAction = choice
-
-    # PROCEED BUTTON HANDLER
-    def btn_proceed_handler(self):
-        if self._loggedIn:
-            if self._userAction == 'List':
-                self._ftp_client.list()
-                self._server_message += self._ftp_client.getServerMessage()
-                self.td_server_response.setText(self._server_message)
-            else:
-                print(self._userAction)
-        else:
-            print("You are not logged in")
 
     # MOVE BUTTON HANDLER
     def btn_move_handler(self):
-        path = self.le_move.text()
-        if path == '':
-            self._ftp_client.cdup()
-        elif self._loggedIn and self._userAction == 'Move':
-            self._ftp_client.cwd(path)
+        if self._loggedIn:
+            path = self.le_move.text()
+            if path == '':
+                self._ftp_client.cdup()
+            else:
+                self._ftp_client.cwd(path)
+
+            self._server_message += self._ftp_client.getServerMessage()
+            self.td_server_response.setText(self._server_message)
         else:
-            print("Did not change directories")
-        self._server_message += self._ftp_client.getServerMessage()
-        self.td_server_response.setText(self._server_message)
+            print("Cannot Change Directories \n PLEASE LOGIN TO A SERVER")
 
     # PROGRESS BAR UPLOAD
     def uploadProgress(self):
@@ -182,13 +176,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # CREATE A FILE
     def btn_create_handler(self):
-        filename = self.le_create_file.text()
-        self._ftp_client.mkd(filename)
+        if self._loggedIn:
+            filename = self.le_create_file.text()
+            self._ftp_client.mkd(filename)
+            self._server_message += self._ftp_client.getServerMessage()
+        else:
+            self._server_message += 'Cannot create a directory \n PLEASE LOGIN TO A SERVER\n'
+            self.td_server_response.setText(self._server_message)
+
 
     def btn_delete_handler(self):
-        filename = self.le_delete_file.text()
-        print(filename)
-        self._ftp_client.dele(str(filename))
+        if self._loggedIn:
+            filename = self.le_delete_file.text()
+            print(filename)
+            self._ftp_client.dele(str(filename))
 
 
 if __name__ == '__main__':

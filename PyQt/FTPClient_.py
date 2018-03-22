@@ -89,7 +89,7 @@ class FTPclient:
         # print(self._tcp_cmd.receive())
 
         self._server_response += str(self._tcp_data.receive())
-        print(self._server_response)
+        # print(self._server_response)
         self._tcp_data.close()
 
     def retr(self, file_to_download, save_file_to=''):
@@ -137,10 +137,11 @@ class FTPclient:
         print(server_response)
 
     def stor(self, path, name=''):
+        s = ''
         fp = open(name, 'rb')
         self.pasv()
         self._tcp_cmd.transmit('TYPE I' + CRLF)
-        s = str(self._tcp_cmd.receive(8192))
+        s += str(self._tcp_cmd.receive(8192))
 
         self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
         s += str(self._tcp_cmd.receive(8192))

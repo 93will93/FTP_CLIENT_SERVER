@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>758</width>
+    <height>664</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,21 +17,21 @@
    <widget class="QLabel" name="lb_username">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>60</y>
+      <x>140</x>
+      <y>10</y>
       <width>47</width>
       <height>13</height>
      </rect>
     </property>
     <property name="text">
-     <string>User</string>
+     <string>Username</string>
     </property>
    </widget>
    <widget class="QLabel" name="lb_password">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>110</y>
+      <x>290</x>
+      <y>10</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -43,22 +43,22 @@
    <widget class="QLabel" name="lb_ftp_server_address">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>10</x>
       <y>10</y>
       <width>101</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>FTP Server Address</string>
+     <string>host</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="le_ftp_server_address">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>30</y>
-      <width>191</width>
+      <x>40</x>
+      <y>10</y>
+      <width>91</width>
       <height>20</height>
      </rect>
     </property>
@@ -69,9 +69,9 @@
    <widget class="QLineEdit" name="le_username">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>80</y>
-      <width>191</width>
+      <x>190</x>
+      <y>10</y>
+      <width>91</width>
       <height>20</height>
      </rect>
     </property>
@@ -79,9 +79,9 @@
    <widget class="QLineEdit" name="le_password">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>130</y>
-      <width>191</width>
+      <x>340</x>
+      <y>10</y>
+      <width>91</width>
       <height>20</height>
      </rect>
     </property>
@@ -89,18 +89,18 @@
    <widget class="QTextBrowser" name="td_server_response">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>30</y>
-      <width>461</width>
-      <height>301</height>
+      <x>260</x>
+      <y>90</y>
+      <width>481</width>
+      <height>531</height>
      </rect>
     </property>
    </widget>
    <widget class="QLabel" name="lb_server_response">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>10</y>
+      <x>270</x>
+      <y>70</y>
       <width>101</width>
       <height>16</height>
      </rect>
@@ -112,8 +112,8 @@
    <widget class="QPushButton" name="btn_connect">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>180</y>
+      <x>440</x>
+      <y>10</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -122,24 +122,11 @@
      <string>Connect</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btn_disconnect">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>180</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Disconnect</string>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="cb_show_password">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>150</y>
+      <x>340</x>
+      <y>30</y>
       <width>101</width>
       <height>17</height>
      </rect>
@@ -148,53 +135,17 @@
      <string>Show Password</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox_userAction">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>230</y>
-      <width>111</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lb_action">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>210</y>
-      <width>47</width>
-      <height>13</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Action</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_proceed">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>230</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Proceed</string>
-    </property>
-   </widget>
    <widget class="QGroupBox" name="gb_upload">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>350</y>
+      <y>190</y>
       <width>221</width>
       <height>121</height>
      </rect>
     </property>
     <property name="title">
-     <string>Upload Zone</string>
+     <string>Upload</string>
     </property>
     <widget class="QLineEdit" name="le_upload_path">
      <property name="geometry">
@@ -216,7 +167,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Path on Server</string>
+      <string>File Name</string>
      </property>
     </widget>
     <widget class="QPushButton" name="btn_loadfile">
@@ -250,7 +201,7 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>101</width>
+       <width>121</width>
        <height>21</height>
       </rect>
      </property>
@@ -263,13 +214,13 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>260</y>
+      <y>110</y>
       <width>221</width>
-      <height>80</height>
+      <height>71</height>
      </rect>
     </property>
     <property name="title">
-     <string>Move Zone</string>
+     <string>Move</string>
     </property>
     <widget class="QLineEdit" name="le_move">
      <property name="geometry">
@@ -311,14 +262,14 @@
    <widget class="QGroupBox" name="gb_download">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>350</y>
+      <x>20</x>
+      <y>320</y>
       <width>221</width>
       <height>121</height>
      </rect>
     </property>
     <property name="title">
-     <string>Download Zone</string>
+     <string>Download</string>
     </property>
     <widget class="QLabel" name="lb_filename">
      <property name="geometry">
@@ -330,7 +281,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Fiile name</string>
+      <string>Fiile Name</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="le_download_path">
@@ -383,11 +334,11 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="gb_create_file">
+   <widget class="QGroupBox" name="gb_create">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>480</y>
+      <y>450</y>
       <width>221</width>
       <height>80</height>
      </rect>
@@ -432,11 +383,11 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="db_delete_file">
+   <widget class="QGroupBox" name="gb_delete">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>480</y>
+      <x>20</x>
+      <y>540</y>
       <width>221</width>
       <height>80</height>
      </rect>
@@ -460,7 +411,7 @@
     <widget class="QPushButton" name="btn_delete">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>130</x>
        <y>40</y>
        <width>75</width>
        <height>23</height>
@@ -481,6 +432,77 @@
      </property>
     </widget>
    </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>70</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Connection Status</string>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>-40</x>
+      <y>50</y>
+      <width>841</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>-10</y>
+      <width>141</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Lucida Fax</family>
+      <pointsize>35</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>CAIO</string>
+    </property>
+   </widget>
+   <widget class="Line" name="line_2">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>46</y>
+      <width>761</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_list">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>70</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>List Directories</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
@@ -488,7 +510,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>758</width>
      <height>21</height>
     </rect>
    </property>
