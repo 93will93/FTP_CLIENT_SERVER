@@ -1,5 +1,6 @@
 from socket import *
 import time
+import ftplib
 
 # serverName = 'localhost'
 serverName = '127.0.0.1'
