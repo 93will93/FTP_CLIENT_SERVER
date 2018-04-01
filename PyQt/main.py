@@ -1,8 +1,14 @@
+# This script contains a Client GUI for an FTP server using pyQt and python3
+# author: William Becerra Gonzalez
+# author: Sailen Nair
+#
+# Networks Fundamentals ELEN4017
+# University of the Witwatersrand
+#
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-import FTPClient_
 import ftpclient
 import os
 from MainWindow import Ui_MainWindow
@@ -13,8 +19,18 @@ NORMAL_MODE = 0
 POSSIBLE_CLIENT_OPERATIONS = ['', 'List', 'Upload', 'Download', 'Move', 'Create', 'Delete']
 POSSIBLE_OPERATIONS_ACTION = {'': 0, 'List': 1, 'Upload': 2, 'Download': 3, 'Move': 4, 'Delete': 5}
 
+# This class contains the main window its' attributes and all the action handlers
+# This class is the standard way of creating a main window for pyQt applications
+#
+# Qt Widgets are named consistently using abbreviation suffixes that derive from the QWidgets name
+# for a example a button to connect is named btn_connect similarly btn_download is a download button
+# The event handlers have consistent naming convention that follows what triggered the event.
+# For example, a user clicked event on btn_connect the handler for this event is called btn_connect_handler
+#
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+    # Overloaded MainWindow Constructor to set up behaviour of the QWidgets
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
@@ -29,8 +45,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cb_show_password.setChecked(False)
         self.pb_upload.setValue(0)
         self.pb_download.setValue(0)
-
-        self._scrollBar = self.td_server_response.verticalScrollBar();
 
         # Setting Up the labels
         f = self.lb_ftp_server_address.font()
@@ -72,21 +86,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.btn_create.pressed.connect(self.btn_create_handler)
         self.btn_delete.pressed.connect(self.btn_delete_handler)
 
-    # LOADING TO SERVER HANDLER
+    # ============================   Event Handlers   ===================================================
+    # Triggered when the load file button is pressed it brings up a file selector window
+    # and stores the path to the file selected by the user
     def btn_loadfile_handler(self):
         self.pb_upload.setValue(0)
         self._uploadFile, _ = QFileDialog.getOpenFileName(self, 'Open File', '', '', 'All files(*.*)')
-        # print(self._uploadFile)
-        # if filename:
-        #     with open(filename, 'rb') as f:
-        #         file = f.read()
-        #         self._uploadedFile = file
-        #         # self.td_server_response.setText(self._uploadedFile)
-        # else:
-        #     print("No filename")
 
+    # Triggered when the upload button is pressed it then calls the client back end functions to upload the selected file
+    # to the server. This function verifies the user is connected to the server and controls the
+    # progress bar update rate. If user is not logged in it displays Not logged in message.
+    # Displays the server response message in the QTextBrowser widget
     def btn_upload_handler(self):
-
         if self._loggedIn:
             path = self.le_upload_path.text()
             self._ftp_client.stor(str(path), self._uploadFile)
@@ -104,8 +115,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.td_server_response.moveCursor(QTextCursor.End)
 
-
-    # DOWNLOAD BUTTON HANDLER
+    # Triggered when the download button is pressed it calls the client back end function to download a file specified
+    # by the user in the File Name textbox. It verifies the user is connected to the server and controls the download
+    # progress bar update rate. If user is not logged in it displays a message.
+    # Displays the server response message in the QTextBrowser widget
     def btn_download_handler(self):
         if self._loggedIn:
             file_to_download = self.le_download_path.text()
@@ -125,11 +138,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.td_server_response.setText(self._server_message)
         self.td_server_response.moveCursor(QTextCursor.End)
 
+    # Triggered when the save to button is pressed. It opens a file selector window and stores the selected path.
+    # The path includes the user specified name. This path is used by the btn_download_handler() function to save the
+    # downloaded file
     def btn_saveto_handler(self):
         self.pb_upload.setValue(0)
         self._download_path, _ = QFileDialog.getSaveFileName(self, 'Save File', '', '', 'All files(*.*)')
 
-    # CONNECTION BUTTONS HANDLERS
+    # Triggered when the connect button is pressed. This handler is responsible for calling the client back end function
+    # to login to the FTP server. It is also responsible for closing the FTP session as it becomes the disconnect button
+    # as soon as the user is logged in. Displays the server response message in the QTextBrowser widget
     def btn_connect_handler(self):
         if not self._loggedIn:
             ftp_server_address = self.le_ftp_server_address.text()
@@ -162,6 +180,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.td_server_response.setText(self._server_message)
         self.td_server_response.moveCursor(QTextCursor.End)
 
+    # Triggered when the List Directories button is pressed. It calls the client back end functions to send a LIST
+    # command to the FTP server. The function verifies if the user is logged in.
+    # Displays the server response message in the QTextBrowser widget
     def btn_list_handler(self):
         if self._loggedIn:
             self._ftp_client.list()
@@ -175,17 +196,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.td_server_response.moveCursor(QTextCursor.End)
 
-
-    # RADIO BUTTON HANDLERS
+    # Triggered when the show password checkbox is ticked. It toggles the password visibility on and off at the convenience of the user
     def cb_show_password_handler(self, s):
         if s == Qt.Checked:
             self.le_password.setEchoMode(NORMAL_MODE)
         else:
             self.le_password.setEchoMode(PASSWORD_MODE)
 
-    # COMBOBOX HANDLER ['':0, 'List':1, 'Upload':2, 'Download':3, 'Move':4, 'Delete':5]
-
-    # MOVE BUTTON HANDLER
+    # Triggered when the Move button is pressed. The function moves the user to the working directory defined by
+    # the path in the textbox. If the user leaves the path textbox empty it is assumed the user wants to move to the
+    # root directory. Displays the server response message in the QTextBrowser widget
     def btn_move_handler(self):
         if self._loggedIn:
             path = self.le_move.text()
@@ -201,14 +221,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.td_server_response.moveCursor(QTextCursor.End)
 
-    # PROGRESS BAR UPLOAD
-    def uploadProgress(self):
-        completed = 0
-        while completed < 100:
-            self.completed += 0.0001
-            self.progressBar.setValue(completed)
-
-    # CREATE A FILE
+    # Triggered when the Create button is pressed. The function creates a directory in the FTP server.
+    # The directory is created in the current working directory.
+    # The directory name is defined by the user in the available textbox.
+    # Displays the server response message in the QTextBrowser widget
     def btn_create_handler(self):
         if self._loggedIn:
             filename = self.le_create_file.text()
@@ -222,23 +238,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.td_server_response.setText(self._server_message)
         self.td_server_response.moveCursor(QTextCursor.End)
 
+    # Triggered when the Delete button is pressed. The function deletes a file in the server.
+    # The file is defined by the available textbox. It can delete files and folders
+    # Displays the server response message in the QTextBrowser widget
     def btn_delete_handler(self):
         if self._loggedIn:
             filename = self.le_delete_file.text()
             x = filename.find('.')
-            FOLDER = False
             if x > 0:
                 self._ftp_client.dele(str(filename))
             else:
-                self._server_message += "Cannot Download a Folder"
-                FOLDER =True
+                self._ftp_client.rmd(str(filename))
 
-        if not FOLDER:
-            self._server_message += self._ftp_client.getServerMessage()
 
+        self._server_message += self._ftp_client.getServerMessage()
         self._server_message += '\n'
         self.td_server_response.setText(self._server_message)
         self.td_server_response.moveCursor(QTextCursor.End)
+
 
 # =============================================================
 # MAIN PROGRAM LOOP
