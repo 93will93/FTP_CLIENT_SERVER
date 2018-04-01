@@ -281,7 +281,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Fiile Name</string>
+      <string>File Name</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="le_download_path">

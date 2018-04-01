@@ -182,7 +182,7 @@ class Ui_MainWindow(object):
         self.btn_move.setText(_translate("MainWindow", "Move to"))
         self.lb_movepath.setText(_translate("MainWindow", "Path"))
         self.gb_download.setTitle(_translate("MainWindow", "Download"))
-        self.lb_filename.setText(_translate("MainWindow", "Fiile Name"))
+        self.lb_filename.setText(_translate("MainWindow", "File Name"))
         self.btn_download.setText(_translate("MainWindow", "Download"))
         self.btn_saveto.setText(_translate("MainWindow", "Save to"))
         self.gb_create.setTitle(_translate("MainWindow", "Create a Directory"))
