@@ -1,0 +1,74 @@
+2018-03-23 00:43:51,746 INFO william Command USER william
+2018-03-23 00:43:51,746 INFO william Response USER 331 User name okay, need password
+2018-03-23 00:43:51,746 INFO william Command PASS *****
+2018-03-23 00:43:51,746 INFO william Response PASS 230 User Logged in
+2018-03-23 00:45:45,163 INFO william Command PWD
+2018-03-23 00:45:45,163 INFO william Response PWD 257 C:\Users\William\Google Drive\IE YOS4\ELEN4017 [Networks]\Project1
+2018-03-23 00:45:58,656 INFO william Command PASV
+2018-03-23 00:45:58,656 INFO william Response PASV 227 Entering passive mode(127,0,0,1,102,186)
+2018-03-23 00:45:58,656 INFO william Command LIST
+2018-03-23 00:45:58,656 INFO william Response LIST 150 list is here
+2018-03-23 00:45:58,656 INFO william Response LIST 226 List is done transferring
+2018-03-23 00:46:52,042 INFO william Command QUIT
+2018-03-23 00:46:52,042 INFO william Response QUIT 221 User logged out
+2018-03-23 00:47:30,389 INFO william Command USER william
+2018-03-23 00:47:30,389 INFO william Command USER william
+2018-03-23 00:47:30,389 INFO william Response USER 331 User name okay, need password
+2018-03-23 00:47:30,389 INFO william Response USER 331 User name okay, need password
+2018-03-23 00:47:30,389 INFO william Command PASS *****
+2018-03-23 00:47:30,389 INFO william Command PASS *****
+2018-03-23 00:47:30,389 INFO william Response PASS 230 User Logged in
+2018-03-23 00:47:30,389 INFO william Response PASS 230 User Logged in
+2018-03-23 00:47:33,867 INFO william Command QUIT
+2018-03-23 00:47:33,867 INFO william Command QUIT
+2018-03-23 00:47:33,867 INFO william Response QUIT 221 User logged out
+2018-03-23 00:47:33,867 INFO william Response QUIT 221 User logged out
+2018-03-23 00:48:32,196 INFO william Command USER william
+2018-03-23 00:48:32,196 INFO william Command USER william
+2018-03-23 00:48:32,196 INFO william Command USER william
+2018-03-23 00:48:32,206 INFO william Response USER 331 User name okay, need password
+2018-03-23 00:48:32,206 INFO william Response USER 331 User name okay, need password
+2018-03-23 00:48:32,206 INFO william Response USER 331 User name okay, need password
+2018-03-23 00:48:32,206 INFO william Command PASS *****
+2018-03-23 00:48:32,206 INFO william Command PASS *****
+2018-03-23 00:48:32,206 INFO william Command PASS *****
+2018-03-23 00:48:32,206 INFO william Response PASS 230 User Logged in
+2018-03-23 00:48:32,206 INFO william Response PASS 230 User Logged in
+2018-03-23 00:48:32,206 INFO william Response PASS 230 User Logged in
+2018-03-23 08:23:09,834 INFO william Command USER william
+2018-03-23 08:23:09,834 INFO william Response USER 331 User name okay, need password
+2018-03-23 08:23:09,834 INFO william Command PASS *****
+2018-03-23 08:23:09,834 INFO william Response PASS 230 User Logged in
+2018-03-23 08:23:09,834 INFO william Command PASV
+2018-03-23 08:23:09,834 INFO william Response PASV 227 Entering passive mode(127,0,0,1,125,146)
+2018-03-23 08:23:09,834 INFO william Command PASV
+2018-03-23 08:23:09,834 INFO william Response PASV 227 Entering passive mode(127,0,0,1,155,79)
+2018-03-23 08:23:09,834 INFO william Command LIST
+2018-03-23 08:23:09,834 INFO william Response LIST 150 list is here
+2018-03-23 08:23:09,834 INFO william Response LIST 226 List is done transferring
+2018-03-23 08:25:00,485 INFO william Command PWD
+2018-03-23 08:25:00,485 INFO william Response PWD 257 C:\Users\William\Google Drive\IE YOS4\ELEN4017 [Networks]\Project1
+2018-03-23 08:25:07,801 INFO william Command PASV
+2018-03-23 08:25:07,802 INFO william Response PASV 227 Entering passive mode(127,0,0,1,25,220)
+2018-03-23 08:25:07,803 INFO william Command LIST
+2018-03-23 08:25:07,804 INFO william Response LIST 150 list is here
+2018-03-23 08:25:07,806 INFO william Response LIST 226 List is done transferring
+2018-03-23 11:34:43,663 INFO william Command USER william
+2018-03-23 11:34:43,663 INFO william Response USER 331 User name okay, need password
+2018-03-23 11:34:43,763 INFO william Command PASS *****
+2018-03-23 11:34:43,763 INFO william Response PASS 230 User Logged in
+2018-03-23 11:34:48,911 INFO william Command PASV
+2018-03-23 11:34:48,911 INFO william Response PASV 227 Entering passive mode(127,0,0,1,133,40)
+2018-03-23 11:39:20,574 INFO william Command PASV
+2018-03-23 11:43:19,215 INFO william Command USER william
+2018-03-23 11:43:19,215 INFO william Command USER william
+2018-03-23 11:43:19,215 INFO william Response USER 331 User name okay, need password
+2018-03-23 11:43:19,215 INFO william Response USER 331 User name okay, need password
+2018-03-23 11:43:19,215 INFO william Command PASS *****
+2018-03-23 11:43:19,215 INFO william Command PASS *****
+2018-03-23 11:43:19,215 INFO william Response PASS 230 User Logged in
+2018-03-23 11:43:19,215 INFO william Response PASS 230 User Logged in
+2018-03-23 11:43:24,173 INFO william Command PASV
+2018-03-23 11:43:24,173 INFO william Command PASV
+2018-03-23 11:43:24,173 INFO william Response PASV 227 Entering passive mode(127,0,0,1,99,193)
+2018-03-23 11:43:24,173 INFO william Response PASV 227 Entering passive mode(127,0,0,1,99,193)

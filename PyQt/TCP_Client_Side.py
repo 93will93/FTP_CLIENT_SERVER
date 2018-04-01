@@ -6,12 +6,12 @@ ENCODING_SCHEME = 'UTF-8'
 
 
 class TCP:
-    def __init__(self, serverAdress, serverPort,passive):
+    def __init__(self, serverAdress, serverPort, passive):
         self._serverAdress = serverAdress
         self._serverPort = serverPort
         self._clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         add = (self._serverAdress, self._serverPort)
-        if passive == True:
+        if passive:
             self._clientSocket.connect(add)
 
 

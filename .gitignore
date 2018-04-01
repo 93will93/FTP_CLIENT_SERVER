@@ -12,3 +12,5 @@ testCode\.py
 *.scr
 
 PyQt/\.vscode/
+
+*.pdf

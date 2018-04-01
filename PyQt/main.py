@@ -30,6 +30,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pb_upload.setValue(0)
         self.pb_download.setValue(0)
 
+        self._scrollBar = self.td_server_response.verticalScrollBar();
+
         # Setting Up the labels
         f = self.lb_ftp_server_address.font()
         f.setPointSize(8)
@@ -72,8 +74,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # LOADING TO SERVER HANDLER
     def btn_loadfile_handler(self):
+        self.pb_upload.setValue(0)
         self._uploadFile, _ = QFileDialog.getOpenFileName(self, 'Open File', '', '', 'All files(*.*)')
-        print(self._uploadFile)
+        # print(self._uploadFile)
         # if filename:
         #     with open(filename, 'rb') as f:
         #         file = f.read()
@@ -83,14 +86,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #     print("No filename")
 
     def btn_upload_handler(self):
+
         if self._loggedIn:
             path = self.le_upload_path.text()
             self._ftp_client.stor(str(path), self._uploadFile)
+            self._server_message += self._ftp_client.getServerMessage()
+            self.td_server_response.insertPlainText(self._server_message)
+            # self._scrollBar.setValue(self._scrollBar.maxValue())
+
+            progress = 0
+            while progress <= 100:
+                progress += 0.001
+                self.pb_upload.setValue(progress)
+
         else:
             print("Cannot Upload \n PLEASE LOGIN TO A SERVER")
 
-        self._server_message += self._ftp_client.getServerMessage()
-        self.td_server_response.setText(self._server_message)
+        self.td_server_response.moveCursor(QTextCursor.End)
+
 
     # DOWNLOAD BUTTON HANDLER
     def btn_download_handler(self):
@@ -98,13 +111,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             file_to_download = self.le_download_path.text()
             self._ftp_client.retr(file_to_download, self._download_path)
             self._server_message += self._ftp_client.getServerMessage()
+
+            progress = 0
+            while progress <= 100:
+                progress += 0.001
+                self.pb_download.setValue(progress)
+
         else:
             self._server_message += 'Cannot Download \n PLEASE LOGIN TO A SERVER'
             self.td_server_response.setText(self._server_message)
 
         self._server_message += '\n'
+        self.td_server_response.setText(self._server_message)
+        self.td_server_response.moveCursor(QTextCursor.End)
 
     def btn_saveto_handler(self):
+        self.pb_upload.setValue(0)
         self._download_path, _ = QFileDialog.getSaveFileName(self, 'Save File', '', '', 'All files(*.*)')
 
     # CONNECTION BUTTONS HANDLERS
@@ -136,15 +158,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.le_ftp_server_address.setReadOnly(False)
             self.btn_connect.setText('Connect')
 
+        self._server_message += '\n'
+        self.td_server_response.setText(self._server_message)
+        self.td_server_response.moveCursor(QTextCursor.End)
+
     def btn_list_handler(self):
         if self._loggedIn:
             self._ftp_client.list()
             if len(self._server_message) > 1:
                 self._server_message += '\n'
             self._server_message += self._ftp_client.getServerMessage()
+            self._server_message += '\n'
             self.td_server_response.setText(self._server_message)
         else:
             self.td_server_response.setText('PLEASE LOGIN TO A SERVER')
+
+        self.td_server_response.moveCursor(QTextCursor.End)
+
+
     # RADIO BUTTON HANDLERS
     def cb_show_password_handler(self, s):
         if s == Qt.Checked:
@@ -168,6 +199,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             print("Cannot Change Directories \n PLEASE LOGIN TO A SERVER")
 
+        self.td_server_response.moveCursor(QTextCursor.End)
+
     # PROGRESS BAR UPLOAD
     def uploadProgress(self):
         completed = 0
@@ -185,15 +218,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._server_message += 'Cannot create a directory \n PLEASE LOGIN TO A SERVER\n'
             self.td_server_response.setText(self._server_message)
 
+        self._server_message += '\n'
+        self.td_server_response.setText(self._server_message)
+        self.td_server_response.moveCursor(QTextCursor.End)
 
     def btn_delete_handler(self):
         if self._loggedIn:
             filename = self.le_delete_file.text()
-            print(filename)
-            self._ftp_client.dele(str(filename))
+            x = filename.find('.')
+            FOLDER = False
+            if x > 0:
+                self._ftp_client.dele(str(filename))
+            else:
+                self._server_message += "Cannot Download a Folder"
+                FOLDER =True
 
+        if not FOLDER:
+            self._server_message += self._ftp_client.getServerMessage()
 
+        self._server_message += '\n'
+        self.td_server_response.setText(self._server_message)
+        self.td_server_response.moveCursor(QTextCursor.End)
+
+# =============================================================
+# MAIN PROGRAM LOOP
 if __name__ == '__main__':
     app = QApplication([])
     w = MainWindow()
     app.exec_()
+# =============================================================
