@@ -142,7 +142,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # The path includes the user specified name. This path is used by the btn_download_handler() function to save the
     # downloaded file
     def btn_saveto_handler(self):
-        self.pb_upload.setValue(0)
+        self.pb_download.setValue(0)
         self._download_path, _ = QFileDialog.getSaveFileName(self, 'Save File', '', '', 'All files(*.*)')
 
     # Triggered when the connect button is pressed. This handler is responsible for calling the client back end function
