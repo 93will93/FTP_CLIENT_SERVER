@@ -438,12 +438,12 @@ if __name__ == '__main__':
     uccon_user = 'anonymous'
     uccon_pass = 'anonymous@'
     #
-    localIP = '192.168.0.119'
+    localIP = '10.30.246.107'
     serverIP= localIP
 
 
     client = FTPclient()
-    client.login(localIP, 'william', 'becerra')
+    client.login(localIP, 'sailen', 'password')
 
 
     while 1:
