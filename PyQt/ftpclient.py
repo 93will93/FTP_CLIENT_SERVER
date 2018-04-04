@@ -14,7 +14,8 @@ B_CRLF = b'\r\n'
 SP = ' '
 
 FTP_PORT = 21
-# localIP = '127.0.0.1'
+# localIP = '192.168.0.131'
+# serverIP = '192.168.0.131'
 #  Server response Codes
 USER_LOGIN_SUCCESS_CODE = 230
 ENTERING_PASV_MODE_CODE = 227
@@ -105,17 +106,18 @@ class FTPclient:
     def list(self):
         self._server_response = ''
         if self.isOwnPort:
-            # dataSock = self.activePortSocket()
             self.port()
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind((localIP, int(self.ownPort)))
+            sock.bind(("", int(self.ownPort)))
             sock.listen(1)
 
             self._tcp_cmd.transmit('LIST' + SP + CRLF)
+            response = self._tcp_cmd.receive()
+            self._server_response += response
+            if self.whatIsTheCode(response) == 530:
+                print('User not logged in, cannot access list')
+                return
             self._server_response += self._tcp_cmd.receive()
-            self._server_response += self._tcp_cmd.receive()
-            self._server_response += self._tcp_cmd.receive()
-
             if self.whatIsTheCode(self._server_response) == 425:
                 print('Data connection was unsuccessful in creation')
                 sock.close()
@@ -129,13 +131,18 @@ class FTPclient:
                 if not temp:
                     break
                 list = list + temp
+            self._server_response += list
             activeDatasocket.close()
             sock.close()
 
         else:
             self.pasv()
             self._tcp_cmd.transmit('LIST' + SP + CRLF)
-            self._server_response += self._tcp_cmd.receive()
+            response = self._tcp_cmd.receive()
+            self._server_response += response
+            if self.whatIsTheCode(response) == 530:
+                print('User not logged in, cannot access list')
+                return
             self._server_response += self._tcp_cmd.receive()
             self._server_response += self._tcp_data.receive()
             self._tcp_data.close()
@@ -147,12 +154,18 @@ class FTPclient:
         if self.isOwnPort == True:
             self.port()
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind((localIP, int(self.ownPort)))
+            sock.bind(("", int(self.ownPort)))
             sock.listen(1)
             self._tcp_cmd.transmit('TYPE I' + CRLF)
             self._server_response += self._tcp_cmd.receive(8192)
             self._tcp_cmd.transmit('RETR' + SP + file_to_download + CRLF)
-            self._server_response += self._tcp_cmd.receive()
+
+
+            response = self._tcp_cmd.receive()
+            self._server_response += response
+            if self.whatIsTheCode(response) == 530:
+                print('User not logged in, cannot download')
+                return
 
             activeDatasocket, activeSocketAdress = sock.accept()
             data = activeDatasocket.recv(8192)
@@ -175,7 +188,11 @@ class FTPclient:
             self._tcp_cmd.transmit('TYPE I' + CRLF)
             self._server_response += self._tcp_cmd.receive(8192)
             self._tcp_cmd.transmit('RETR' + SP + file_to_download + CRLF)
-            self._server_response += self._tcp_cmd.receive()
+            response = self._tcp_cmd.receive()
+            self._server_response += response
+            if self.whatIsTheCode(response) == 530:
+                print('User not logged in, cannot download')
+                return
 
             data = self._tcp_data.receiveBinary()
             while True:
@@ -222,19 +239,29 @@ class FTPclient:
     # Sends the STOR command to the FTP server. This command allows the user to upload a file to the server.
     # The function takes in as argument the name of the file to be uploaded and the path on the server
     # for the file to be uploaded
-    def stor(self, path, name=''):
+    def stor(self, path):
         self._server_response = ''
         if self.isOwnPort:
             self.port()
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind((localIP, int(self.ownPort)))
+            sock.bind(("", int(self.ownPort)))
             sock.listen(1)
+            name = input('Enter file name to upload: ')
             fp = open(name, 'rb')
             self._tcp_cmd.transmit('TYPE I' + CRLF)
             response = self._tcp_cmd.receive(8192)
+            self._server_response += response
             self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
-            response += self._tcp_cmd.receive(8192)
+            response = self._tcp_cmd.receive()
+            self._server_response += response
+            if self.whatIsTheCode(response) == 530:
+                print('User not logged in, cannot download')
+                return
+
+
             activeDatasocket, activeSocketAdress = sock.accept()
+
+
             data = fp.readline(8192)
 
             while True:
@@ -252,13 +279,19 @@ class FTPclient:
             print(response)
             fp.close()
         else:
+            name = input('Enter file name to upload: ')
             fp = open(name, 'rb')
             self.pasv()
             self._tcp_cmd.transmit('TYPE I' + CRLF)
             self._server_response += self._tcp_cmd.receive(8192)
 
             self._tcp_cmd.transmit('STOR' + SP + path + CRLF)
-            self._server_response += self._tcp_cmd.receive(8192)
+
+            response = self._tcp_cmd.receive()
+            self._server_response += response
+            if self.whatIsTheCode(response) == 530:
+                print('User not logged in, cannot download')
+                return
 
             data = fp.readline(8192)
 
@@ -361,7 +394,7 @@ class FTPclient:
         print(response)
 
     # Sends the HELP command to the server
-    def help(self, about=''):
+    def help(self):
         self.pasv()
         self._tcp_cmd.transmit('HELP' + SP + CRLF)
         print(self._tcp_cmd.receive())
@@ -402,25 +435,16 @@ if __name__ == '__main__':
     # eie_pass = 'engaqu4a'
     #
     mirror_ftp = 'ftp.mirror.ac.za'
-    #
-    # uccon_ftp = 'ftp.uconn.edu'
     uccon_user = 'anonymous'
     uccon_pass = 'anonymous@'
     #
-    # localhost = 'localhost'
-    localIP = '127.0.0.1'
-    # localIP = mirror_ftp
-    #
-    # test_ftp = 'speedtest.tele2.net'
+    localIP = '192.168.0.119'
+    serverIP= localIP
+
 
     client = FTPclient()
-    # client.login(localIP, uccon_user, uccon_pass)
-    client.login('127.0.0.1', 'will', '1010')
-    # client = FTPclient(eie_ftp, eie_user, eie_pass)
-    # client = FTPclient(localhost, 'will', '')
+    client.login(localIP, 'william', 'becerra')
 
-    # client.pasv()
-    # client.list()
 
     while 1:
         message = input('Enter command: ')
@@ -481,8 +505,7 @@ if __name__ == '__main__':
             client.noop()
 
         if message == 'HELP':
-            x = input('What do you need help on: ')
-            client.help(x)
+            client.help()
 
         if message == 'PORT':
             client.port()

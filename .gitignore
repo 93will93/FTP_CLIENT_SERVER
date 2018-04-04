@@ -14,3 +14,11 @@ testCode\.py
 PyQt/\.vscode/
 
 *.pdf
+
+Logs/
+
+sailen/
+
+hello\.txt
+
+city\.jpeg
